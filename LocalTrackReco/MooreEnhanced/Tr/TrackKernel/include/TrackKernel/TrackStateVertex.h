@@ -1,0 +1,200 @@
+/*****************************************************************************\
+* (c) Copyright 2000-2018 CERN for the benefit of the LHCb Collaboration      *
+*                                                                             *
+* This software is distributed under the terms of the GNU General Public      *
+* Licence version 3 (GPL Version 3), copied verbatim in the file "COPYING".   *
+*                                                                             *
+* In applying this licence, CERN does not waive the privileges and immunities *
+* granted to it by virtue of its status as an Intergovernmental Organization  *
+* or submit itself to any jurisdiction.                                       *
+\*****************************************************************************/
+#ifndef TRACKKERNEL_TrackStateVertex_H
+#define TRACKKERNEL_TrackStateVertex_H 1
+
+// Include files
+#include "Event/State.h"
+#include "GaudiKernel/Vector4DTypes.h"
+#include "Kernel/STLExtensions.h"
+
+namespace LHCb {
+
+  // Forward declarations
+  namespace TrackVertexHelpers {
+    class VertexTrack;
+  }
+
+  /** @class TrackStateVertex TrackStateVertex.h
+   *
+   * Vertex(ing) class for multitrack vertices
+   *
+   * @author Wouter Hulsbergen
+   * created Wed Dec 12 14:58:51 2007
+   *
+   */
+
+  class TrackStateVertex {
+  public:
+    ///
+    enum FitStatus { FitSuccess, FitFailure, UnFitted };
+    enum ErrCode {
+      NoError              = 0,
+      NotConverged         = 1,
+      BadInputTrack        = 2,
+      InsufficientTracks   = 4,
+      ProjectionFailure    = 8,
+      InversionFailure     = 16,
+      NotConvergedAdaptive = 32
+    };
+
+    /// Sets minimal data content for useable vertex. The rest we do with setters.
+    TrackStateVertex();
+
+    /// Construct vertex from set of states. also fits the vertex.
+    TrackStateVertex( span<const LHCb::State* const> states, double maxdchisq = 0.01, size_t maxiterations = 10 );
+
+    /// Construct vertex from two states. also fits the vertex
+    TrackStateVertex( const LHCb::State& state1, const LHCb::State& state2, double maxdchisq = 0.01,
+                      size_t maxiterations = 10 );
+
+    /// Construct from a reference vertex. Then add track states
+    /// later. If you use inverse of cov matrix, specify 'isweight=true'.
+    TrackStateVertex( const Gaudi::XYZPoint& refposition, const Gaudi::SymMatrix3x3& refcovariance,
+                      bool isweight = false );
+
+    /// Copy constructor
+    TrackStateVertex( const TrackStateVertex& vertex );
+
+    /// Destructor
+    ~TrackStateVertex();
+
+    /// assignment
+    TrackStateVertex& operator=( const TrackStateVertex& vertex );
+
+    /// add a track. invalidates any existing fit. (call 'fitOneStep' afterwards)
+    void addTrack( const LHCb::State& state, const Gaudi::TrackVector& reference, double weight = 1.0 );
+
+    /// add a track. invalidates any existing fit. (call 'fit' afterwards)
+    void addTrack( const LHCb::State& state, double weight = 1.0 ) { addTrack( state, state.stateVector(), weight ); }
+
+    /// Set the input state for track i. invalidates any existing fit. (call 'fit' afterwards)
+    void setTrack( size_t i, const LHCb::State& state ) { setInputState( i, state ); }
+
+    /// fit a single iteration. returns the delta-chisquare.
+    double fitOneStep();
+
+    /// fit until converged
+    FitStatus fit( double maxdchisq = 0.01, size_t maxiterations = 10 );
+
+    /// adapative fit. downweight tracks with chi2 contribution larger than maxtrkchi2 using Huber weights.
+    /// the '95%' efficient chi2 for 1dof = 1.8. I multiplied that by 2, then rounded.
+    /// (see also http://research.microsoft.com/en-us/um/people/zhang/INRIA/Publis/Tutorial-Estim/node24.html)
+    FitStatus fitAdaptive( double maxtrkchi2 = 4, double maxdchisq = 0.01, size_t maxiterations = 10 );
+
+    /// return the fit status
+    FitStatus fitStatus() const { return m_fitStatus; }
+
+    /// errcode gives some information on the type of error for failed fits
+    int error() const { return m_error; }
+
+    /// calculate the chisquare of the vertex fit
+    double chi2() const;
+
+    /// number of dofs in vertex fit
+    int nDoF() const { return nTracks() * 2 - 3 + ( hasReference() ? 3 : 0 ); }
+
+    /// number of tracks in vertex
+    size_t nTracks() const { return m_tracks.size(); }
+
+    /// Fitted state vector of track i
+    Gaudi::TrackVector stateVector( size_t i ) const;
+    /// Fitted covariance of track i
+    Gaudi::TrackSymMatrix stateCovariance( size_t i ) const;
+    /// Correlation matrix between state i and j
+    Gaudi::Matrix5x5 stateCovariance( size_t i, size_t j ) const;
+    /// Fitted state for track i
+    LHCb::State state( size_t i ) const;
+    /// Fitted state at vertex z position for track i
+    LHCb::State stateAtVertex( size_t i ) const;
+    /// Input state for track i
+    const LHCb::State& inputState( size_t i ) const;
+    /// Set the input state for track i
+    void setInputState( size_t i, const LHCb::State& state );
+    /// Position of the vertex
+    Gaudi::XYZPoint position() const { return Gaudi::XYZPoint( m_pos( 0 ), m_pos( 1 ), m_pos( 2 ) ); }
+    /// Position covariance of the vertex
+    const Gaudi::SymMatrix3x3& covMatrix() const { return m_poscov; }
+    /// Inverse of position covariance of the vertex
+    const Gaudi::SymMatrix3x3& weightMatrix() const { return m_posweight; }
+    /// Momentum (tx,ty,q/pc) of track i
+    const ROOT::Math::SVector<double, 3>& mom( size_t i ) const;
+    /// Momentum (tx,ty,q/pc) covariance matrix of track i
+    const Gaudi::SymMatrix3x3& momCovMatrix( size_t i ) const;
+    /// Covariance matrix for momentum i and position
+    const ROOT::Math::SMatrix<double, 3, 3>& momPosCovMatrix( size_t i ) const;
+    /// Covariance matrix for momentum i and momentum j (j<=i)
+    const Gaudi::Matrix3x3& momMomCovMatrixFast( size_t i, size_t j ) const {
+      return m_mommomcov.empty() ? computeMomMomCov( i, j ) : m_mommomcov[symIndex( i, j )];
+    }
+    /// Covariance matrix for momentum i and momentum j
+    Gaudi::Matrix3x3 momMomCovMatrix( size_t i, size_t j ) const {
+      return j <= i ? momMomCovMatrixFast( i, j ) : ROOT::Math::Transpose( momMomCovMatrixFast( j, i ) );
+    }
+    /// Get the total p4 given the mass hypotheses
+    Gaudi::LorentzVector p4( const std::vector<double>& masshypos ) const;
+    /// Get the total p4 given the mass hypotheses
+    Gaudi::SymMatrix4x4 p4CovMatrix( const std::vector<double>& masshypos ) const;
+    /// Get the cov7x7
+    Gaudi::SymMatrix7x7 covMatrix7x7( const std::vector<double>& masshypos ) const;
+    /// Get the mass given a set of mass hypotheses
+    double mass( const std::vector<double>& masshypos ) const;
+    /// Get the error on the mass given a set of mass hypotheses
+    double massErr( const std::vector<double>& masshypos ) const;
+    /// Add a mass constraint
+    FitStatus constrainMass( const std::vector<double>& masshypos, double constrainedmass, double naturalwidth = 0. );
+
+    /// Projection matrix for state i to vertex position (matrix A in Fruhwirth)
+    const ROOT::Math::SMatrix<double, 5, 3>& matrixA( size_t i ) const;
+    /// Projection matrix for state i to momentum i (matrix B in Fruhwirth)
+    const ROOT::Math::SMatrix<double, 5, 3>& matrixB( size_t i ) const;
+
+    /// the biased chisquare contribution of a single track. (the
+    /// unbiased one I still need to compute)
+    double biasedChi2( size_t i ) const;
+
+    /// get the weight of a track after the adaptive fit
+    double weight( size_t i ) const;
+
+    /// set the weight of a track
+    void setWeight( size_t i, const double w );
+
+    /// move the tracks from another vertex to this vertex
+    void takeTracks( TrackStateVertex&& rhs );
+
+  private:
+    size_t                  symIndex( size_t i, size_t j ) const { return i * ( i + 1 ) / 2 + j; }
+    const Gaudi::Matrix3x3& computeMomMomCov( size_t i, size_t j ) const;
+    bool hasReference() const { return ( m_refweight( 0, 0 ) + m_refweight( 1, 1 ) + m_refweight( 2, 2 ) ) > 0; }
+    void initPos();
+
+  private:
+    typedef TrackVertexHelpers::VertexTrack                               VertexTrack;
+    typedef std::vector<std::unique_ptr<TrackVertexHelpers::VertexTrack>> VertexTrackContainer;
+    typedef ROOT::Math::SVector<double, 3>                                MomentumParameters;
+    typedef ROOT::Math::SVector<double, 3>                                PositionParameters;
+    typedef Gaudi::SymMatrix3x3                                           PositionCovariance;
+    typedef Gaudi::SymMatrix3x3                                           MomentumCovariance;
+    VertexTrackContainer                                                  m_tracks;
+    PositionParameters                                                    m_pos;
+    PositionCovariance                                                    m_poscov;
+    mutable std::vector<Gaudi::Matrix3x3>                                 m_mommomcov;
+    FitStatus                                                             m_fitStatus = UnFitted;
+    int                                                                   m_error     = NoError;
+    mutable double                                                        m_chi2      = -1;
+    PositionParameters                                                    m_refpos; // position of reference position
+    PositionCovariance m_refweight; // weight (inverse cov) of reference position
+    PositionCovariance m_posweight; // inverse of the position covariance matrix
+  };
+
+} // namespace LHCb
+
+#endif

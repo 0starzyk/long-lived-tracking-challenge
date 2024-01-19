@@ -1,0 +1,38 @@
+<!--
+    (c) Copyright 2000-2018 CERN for the benefit of the LHCb Collaboration
+
+    This software is distributed under the terms of the GNU General Public
+    Licence version 3 (GPL Version 3), copied verbatim in the file "COPYING".
+
+    In applying this licence, CERN does not waive the privileges and immunities
+    granted to it by virtue of its status as an Intergovernmental Organization
+    or submit itself to any jurisdiction.
+-->
+<lcgdict>
+  <class name    = "IHitExpectation"         />
+  <class name    = "IMaterialLocator"        />
+  <class name    = "IMeasurementProvider"    />
+  <class name    = "IMeasurementProviderProjector" />
+  <class name    = "IPtTransporter"          />
+  <class name    = "IPVOfflineTool"          />
+  <class name    = "IPrFitterTool"           />
+  <class name    = "IStateCorrectionTool"    />
+  <class name    = "ITrackCaloMatch"         />
+  <class name    = "ITrackChi2Calculator"    />
+  <class name    = "ITrackCloneFinder"       />
+  <class name    = "ITrackExtraSelector"     />
+  <class name    = "ITrackFitter"            />
+  <class name    = "ITrackInterpolator"      />
+  <class name    = "ITrackKalmanFilter"      />
+  <class name    = "ITrackManipulator"       />
+  <class name    = "ITrackMatch"             />
+  <class name    = "ITrackMomentumEstimate"  />
+  <class name    = "ITrackProjector"         />
+  <class name    = "ITrackProjectorSelector" />
+  <class name    = "ITrackSelector"          />
+  <class name    = "ITracksFromTrack"        />
+  <class name    = "ITrackStateInit"         />
+  <class name    = "ITrackVertexer"          />
+  <class name    = "ITrajFitter"             />
+  <class name    = "ITrackStateProvider"     />
+</lcgdict>

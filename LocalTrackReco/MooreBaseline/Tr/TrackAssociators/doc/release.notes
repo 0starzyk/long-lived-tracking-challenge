@@ -1,0 +1,133 @@
+!----------------------------------------------------------------------------
+! Package     : Tr/TrackAssociators
+! Responsible : Edwin Bos
+! Purpose     : Associators to MC truth for Tracks
+!----------------------------------------------------------------------------
+
+!========================= TrackAssociators v2r12p1 2015-10-13 ========================
+! 2015-08-12 - Gerhard Raven
+ - remove #include of obsolete Gaudi headers
+
+!========================= TrackAssociators v2r12 2015-04-21 =========================
+! 2015-03-31 - Michel De Cian
+ - Use LHCb::Track::Range such that also LHCb::Track::Selection can be used as an input container.
+
+!========================= TrackAssociators v2r11 2013-02-14 =========================
+! 2013-01-30 - Jianchun Wang
+ - Add UT as alternative to TT.
+
+!========================= TrackAssociators v2r10 2012-11-28 =========================
+! 2012-11-22 - Marco Clemencic
+ - Added CMake configuration file.
+
+! 2012-11-16 - Marco Cattaneo
+ - Fix gcc --pedantic warning
+ - Fix UNINIT_CTOR defect
+ - Remove derived class finalize method that was just calling the base class
+
+!========================= TrackAssociators v2r9 2010-12-02 =========================
+! 2010-12-02 - Olivier Callot
+ - Re-implement the mother-daughter matching. Now it is done for any position
+   of the decay vertex, but only from daughter to mother and if the vertex is
+   of type DecayVertex.
+
+! 2010-11-25 - Olivier Callot
+ - use getOrCreate method to access the tracks, so that non created containers
+  (partial reconstruction) don't bomb
+
+!===================== TrackAssociators v2r8 2010-05-21 ====================
+! 2010-05-20 - Olivier Callot
+ - Clear the linker table before associating. Needed when reading a DST, as an
+   associater table already exists.
+
+!===================== TrackAssociators v2r7 2009-10-20 ====================
+! 2009-10-20 - Marco Cattaneo
+ - Remove obsolete file TrackAssociators_dll.cpp
+
+! 2009-10-07 - Wouter Hulsbergen
+ - Removed code that would omit outliers in comparison to MC since it was 
+   anyway broken.
+
+!===================== TrackAssociators v2r6 2008-04-04 ====================
+! 2008-04-04 - Marco Cattaneo
+ - Adapt to new OT linkers produced by Boole v15r0 (backward compatible change)
+
+!===================== TrackAssociators v2r5 2007-07-09 ====================
+! 2007-07-06 - Edwin Bos
+ - Fix for default absence of muon type linker table committed.
+
+! 2007-07-05 - Edwin Bos
+ - Added Muon hits in association decision,
+ - jobOption "DecideUsingMuons" = false by default
+
+!===================== TrackAssociators v2r4 2007-05-03 ====================
+! 2007-05-03 - Marco Cattaneo
+ - Remove obsolete file TrackAssociators_load.cpp
+
+! 2007-05-03 - Edwin Bos
+ - Association through LHCbIDs rather than Measurments.
+
+!===================== TrackAssociators v2r3 2006-12-19 ====================
+! 2006-12-19 - Marco Cattaneo
+ - Use DECLARE_ALGORITHM_FACTORY macro
+
+!===================== TrackAssociators v2r2 2006-10-02 ====================
+! 2006-06-09 - Eduardo Rodrigues
+ - fixed typo in a linker check
+
+!===================== TrackAssociators v2r1 2006-05-23 ====================
+! 2006-05-22 - Eduardo Rodrigues
+ - misleading "error" messages put to debug level. More debugging introduced
+
+! 2006-05-19 - Eduardo Rodrigues
+ - path to linker table set by default to same path as input tracks
+   (no more need to set it explicitly via options for defaults)
+ - "using namespace ..." removed from header files
+
+!===================== TrackAssociators v2r0 2006-03-13 ====================
+! 2006-03-09 - Edwin Bos
+ - Moved to LHCb v20r0
+
+! 2006-01-19 - Eduardo Rodrigues
+ - removed unnecessary "MinimalZ" property - using instead the track event
+   model functionality
+ - added default options for the algorithm
+
+! 2005-12-14 - Eduardo Rodrigues
+ - propagation of changes ITMeasurement -> STMeasurement
+
+!===================== TrackAssociators v1r4 2005-11-14 ====================
+! Edwin Bos
+  - Changed over from Relations to Linkers
+  - Removed possibility for OTMeasurement at Z < 5 meters,
+    which was being counted as a TT hit
+  - Still uses Relations input from the subdetectors in stead of Linkers
+  - Useage for instance in $BRUNELOPTS/BrunelCheck.opts :
+
+             // Track to MCParticle Linker
+             ApplicationMgr.DLLs += { "TrackAssociators",
+                                      "TrackFitEvent" };
+             XXXYYYSeq.Members += { "TrackAssociator" };
+             // example:  XXXYYY = CheckTr 
+             TrackAssociator.TracksInContainer = "Rec/Track/ZZZ";
+             // example : ZZZ = Best
+             // automatically prefixes "Link/" for linker :
+             TrackAssociator.LinkerOutTable = "Rec/Track/ZZZ";
+
+
+!===================== TrackAssociators v1r3 2005-10-07 ====================
+! Matt Needham
+  - retrieve tools in the proper way
+  - add linker maker
+  - make table double not float !!
+  - ++ not ++
+
+!===================== TrackAssociators v1r2 2005-09-21 ====================
+! Eduardo Rodrigues
+ - minor improvements (latest Gaudies) and fixes
+
+!===================== TrackAssociators v1r1 2005-09-13 ====================
+! Edwin Bos
+ - Creation of package from Tr/TrFitAssociators and Tr/TrAssociators
+   of the old track event model
+ - Adapted to the new event model

@@ -1,0 +1,269 @@
+!-----------------------------------------------------------------------------
+! Package     : Pr/PrMCTools
+! Responsible : Michel De Cian
+! Purpose     : MC tools for pattern recognition for the Upgrade
+!-----------------------------------------------------------------------------
+
+! 2016-12-14 - Jeroen van Tilburg
+ - Adapt to new FT geometry and numbering scheme
+ - Changed location of Linker tables. 
+
+!========================= PrMCTools v2r12 2016-01-28 =========================
+! 2016-01-21 Marco Cattaneo
+ - Use std::abs instead of fabs for int argument, to silence clang warning
+
+! 2016-01-15 Marian Stahl
+  - made tex table compatible with lhcb template, added caption and label
+
+! 2016-01-15 Marian Stahl
+  - Added option to write the statistics table to a tex-file in PrChecker2
+  - Implemented writing of statistics table to tex file in PrCounter2
+  - rewrote some for-loops as C++11 range based loops in PrChecker2
+
+! 2015-12-05 Renato Quagliani
+  - Fix PlotResidual binning in PrPlotFTHits taking all the time the higher contribution to cluster.
+
+
+! 2015-12-04 Michel De Cian
+ - Add flag to PrChecker to switch between upgrade and non-upgrade location for LHCbID linker table.
+
+! 2015-11-25  Renato Quagliani
+ - Fix warning message for boole to double conversion in PrClustersResidual
+! 2015-11-24  Renato Quagliani
+ - Add option to PrPlotFTHits to plot the residual state for Seed and Forward Tracks ( Residual x, y, tx, ty) activable with PrPlotFTHit.PlotStates = True (False by Default)
+ - Add option to PrPlotFTHits to plot the Occupancy in the detector splitting contributions from Noise / SpillOver / MCParticle activable with PrPlotFTHits.PlotOccupancy = True
+ - Add the PrClustersResidual tool which produce different nTuples to check the residual between Clusters and MCHits and provides some branches filled for further studies in a ROOT environment to study the track behavior in the SciFi.
+
+!========================= PrMCTools v2r11p1 2015-11-23 =========================
+! 2015-11-23 - Michel De Cian
+ - Add doxygen documentation to PrChecker
+
+!========================= PrMCTools v2r11 2015-10-13 =========================
+! 2015-09-24 - Michel De Cian
+ - Code cleaning in PrChecker2.
+
+! 2015-09-23 - Michel De Cian
+ - Fix indentations in PrChecker2
+
+! 2015-08-12 - Gerhard Raven
+ - remove #include of obsolete Gaudi headers
+
+!========================= PrMCTools v2r10 2015-06-08 =========================
+! 2015-05-29 - Michel De Cian
+ - Make sure PrTrackAssociator writes out linker location, even if there are no tracks in the event.
+
+!========================= PrMCTools v2r9 2015-05-26 =========================
+! 2015-04-24 - Heinrich Schindler
+ - Tidy up PrCheatedVP and adapt it to "new" (spring 2014) VPCluster format.
+
+!========================= PrMCTools v2r8 2015-04-21 =========================
+! 2015-03-31 - Michel De Cian
+ - Adapt 'PrTrackAssociator' such that the list of classID it understands can be configured. Give it per default for LHCb::Track and LHCb::Track::Selection.
+
+! 2015-03-23 - Michel De Cian
+ - Add algorithm 'PrCheatedSciFiTracking' that performs an ideal pattern recognition in the SciFi.
+
+! 2015-03-21 - Michel De Cian
+ - Add cut on ghost probability to PrCounter. This is only set for 'Best' category tracks in the PrChecker. The default cut is such that it has no effect.
+
+!========================= PrMCTools v2r7 2015-02-23 =========================
+! 2015-02-18 - Sascha Stahl
+ - PrTrackAssociator: Changed output level in case the root of containers does not exist from ERROR to DEBUG. This reduces the output when
+   running the PrTrackAssociator in Moore when locations not necessarily exist in each event. In the default Brunel configuration
+   the default root always exists.
+
+! 2015-02-18 - Svende Braun
+- Modified PrChecker2 to be faster, added TrackSelector and variable m_upgrade to change between hitLocation Pat/LHCbID or Pr/LHCbID for upgrade (default true).
+
+! 2015-01-17 - Svende Braun
+- Modified PrChecker2 to be faster, added global option to choose track extrapolation(default false).
+
+! 2014-12-22 - Svende Braun
+- Fixed fromB/fromD and isNotDown selection, added configurable track container for PrCounter2 and PrTTCounter, added global selection cuts: eta25cut, triggerNumbers, vetoElectrons.
+
+!========================= PrMCTools v2r5 2014-12-11 =========================
+! 2014-12-10 - Michel De Cian
+- Fix LiteCluster locations for STDetectors in PrLHCbID2MCParticle
+
+! 2014-11-08 - Michel De Cian
+- Fix CMakeLists to include LoKiMCLib
+
+! 2014-11-07 - Svende Braun
+- Add PrTTCounter, PrChecker2 and PrCounter2 for efficiency studies, add LokiMC to requirements file. Temporary solution only.
+
+!========================= PrMCTools v2r4p1 2014-10-14 =========================
+! 2014-09-18 - Michel De Cian
+- Add some more doxygen comments to PrPlotFTHits.
+
+!========================= PrMCTools v2r4 2014-09-08 =========================
+! 2014-09-04 - Tim Head
+ - Make Best track location configurable in PrChecker
+
+!========================= PrMCTools v2r3 2014-06-10 =========================
+! 2014-06-03 - Michel De Cian
+ - Fix small bug in PrPlotFTHits.cpp with PrFTHitManager
+
+!========================= PrMCTools v2r2 2014-05-13 =========================
+! 2004-05-15 - Marco Cattaneo
+ - Fixed missing TrackInterfaces dependencies in cmt/requirements
+
+! 2014-05-13 - Marco Clemencic
+ - Fixed CMake configuration.
+
+! 2014-05-09 - Michel De Cian
+ - First commit of PrPlotFTHits, an algorithm that makes various plots for hit-related quantities in the FT.
+
+! 2014-04-25 - Heinrich Schindler
+ - PrDebugTrackingLosses: follow changes in VPChannelID format (r171869).
+ - Rename PatPixelDebugTool (moved here from Tr/TrackMCTools)
+   to PrPixelDebugTool and make it inherit from PrDebugTool.
+
+! 2014-04-01 - Heinrich Schindler
+ - Remove linking based on VPLiteClusters from PrLHCbID2MCParticle.
+
+! 2014-03-30 - Heinrich Schindler
+ - Follow changes in VPCluster format (removal of VPLiteCluster, r170715)
+
+! 2014-03-18 - Michel De Cian
+ - Rename FTRawCluster to FTLiteCluster in PrLHCbID2MCParticle
+
+!========================= PrMCTools v2r1 2014-03-18 =========================
+! 2014-03-13 - Heinrich Schindler
+ - Follow changes in VPCluster path (revision r169999).
+
+!========================= PrMCTools v2r0 2014-02-19 =========================
+! 2014-02-14 - Michel De Cian
+ - Update PrCounter to avoid FPE.
+
+! 2014-02-13 - Michel De Cian
+ - Update PrChecker with 'electron' flag, to take electrons into account or not.
+
+! 2014-02-03 - Michel De Cian
+ - Comment unused member variables in PrChecker.
+
+! 2014-01-31 - Michel De Cian
+ - Remove VL dependency from PrCounter.
+
+! 2014-01-30 - Michel De Cian
+ - Updated PrCounter and PrChecker: Added trigger condition and new efficiency categories. Uses new IPrCounter interface.
+
+! 2014-01-23 - Michel De Cian
+-  Fix behaviour of flag 'fromB' in PrDebugTrackingLosses to only include B baryons and mesons, and not particles from string fragmentation of b quarks (now consistent with PrChecker)
+
+! 2014-01-20 - Michel De Cian
+- Replace 'get' with 'getIfExists' in PrTrackAssociator to allow a more behaved exiting of the code if the container does not exists.
+
+! 2014-01-18 - Michel De Cian
+-  Fix behaviour of flag 'fromB' in PrVeloUTChecker to only include B baryons and mesons, and not particles from string fragmentation of b quarks (now consistent with PrChecker)
+
+! 2014-01-13 - Marco Cattaneo
+ - Remove VL support
+
+!========================= PrMCTools v1r8 2013-12-10 =========================
+! 2013-11-18 - Heinrich Schindler
+ - PrCheatedVP: Follow change in channelToPoint syntax in DeVPSensor,
+   remove unused includes
+
+!========================= PrMCTools v1r7 2013-10-24 =========================
+! 2013-10-16 - Wouter Hulsbergen
+ - Make sure PrTrackAssociator clears a linker table before filling it
+
+! 2013-10-05 - Michel De Cian
+ - Fix behaviour of flag 'fromB' in PrChecker to only include B baryons and mesons, and not particles from string fragmentation of b quarks (follow-up of change in Gauss, r159594)
+
+!========================= PrMCTools v1r6 2013-10-01 =========================
+! 2013-09-30 - Marco Cattaneo
+ - Add VPDet dependency also in CMakeLists.txt
+
+! 2013-09-27 - Daniel Hynds
+- Fixed call to det element
+- Added cheated PR for VP detector
+- Split polynomial fit function for velo + VP
+
+! 2013-09-09 - Heinrich Schindler
+ - Replace VPChannelID::sensor() by VPChannelID::module()
+
+! 2013-08-13 - Thomas Nikodem
+ - Removed unused writeSeedHistos from PrChecker
+
+!========================= PrMCTools v1r5 2013-07-18 =========================
+! 2013-06-13 - Michel De Cian
+ - Fix a possible failure of a dynamic cast in PrChecker.cpp
+
+! 2013-06-10 - Marco Cattaneo
+ - Fix a clang32 warning
+ - Add protection for a DIVIDE_BY_ZERO defect
+ - Fix UNINIT_CTOR defects
+
+!========================= PrMCTools v1r4 2013-06-03 =========================
+! 2013-06-01 - Thomas Nikodem
+ - fixed compilation warning (unused variable)
+
+! 2013-05-31 - Thomas Nikodem, Sascha Stahl
+ - Added possibility to write out Histograms
+ - Added Track Type option for Best Container
+
+! 2013-05-28 - Angelo Di Canto
+ - add a new checker for VeloUT studies
+
+!========================= PrMCTools v1r3 2013-03-22 =========================
+! 2013-02-28 - Sascha Stahl
+ - Added UT to PrTrackAssociator.
+
+! 2013-02-27 - Sascha Stahl
+ - Implemented basic efficiency checking for Matching,
+	 Downstream and Upstream tracking.
+
+! 2013-02-20 - Olivier Callot
+ - Fix a typo in PrDebugTrackingLosses for seeding.
+
+!========================= PrMCTools v1r2 2013-02-14 =========================
+! 2013-01-29 - Olivier Callot
+ - Implement the VP and VL lite clusters in PrLHCbID2MCParticle
+
+! 2012-12-05 - Olivier Callot
+ - Change Tf::OTHitCreator to OTHitCreator
+
+! 2012-12-03 - Olivier Callot
+ - New options for container names in PrDebugTrackingLosses
+ - Initialize properly the otHitManager in PrLHCbID2MCParticle
+
+!========================= PrMCTools v1r1 2012-11-28 =========================
+! 2012-11-26 - Olivier Callot
+ - use lite clusters also in PrLHCbID2MCParticle, and implement UT.
+
+! 2012-10-23 - Marco Cattaneo
+ - Fix gcc -pedantic warnings
+ - Fix coverity defects
+ - Replace endreq by endmsg
+ - use getIfExists
+ - Fix unprotected debug() and verbose()
+ - Fix untested Warning() StatusCode
+
+!========================= PrMCTools v1r0 2012-10-01 =========================
+! 2012-09-21 - Paul Szczypka
+ - Rename of VeloPix to VP (and combinations vP, vp etc.)
+
+! 2012-08-20 - Olivier Callot
+ - Test the existence of the FT container in PrLHCbID2MCParticle
+
+! 2012-08-06 - Olivier Callot
+ - In PrTrackAssociator, revisit the mother-daughter association: The decay can be
+   inside the Velo or inside the T stations. The requirement is direct daughter,
+   and mother has some Velo hits, daughter some T hits.
+   The ghost rate is then reduced by ~0.5%...
+
+! 2012-08-01 - Olivier Callot
+ - fix a compilation warning. Measure the forward performance versus PV multiplicity
+
+! 2012-07-31 - Olivier Callot
+ - Adapt for VL also. New algorithm PrCheatedVElo t ocerate Velo tracks from truth
+
+! 2012-07-06 - Olivier Callot
+ - Protect the search for clones: Linker should always be called first.
+
+! 2012-06-25 - Olivier Callot
+ - Adapt PrDebugTrackingLosses to debug seeeding too.
+
+! 2012-04-04 - Olivier Callot
+ - Initial adaptation of LHCbID2MCParticle, TrackAssociator and PatChecker

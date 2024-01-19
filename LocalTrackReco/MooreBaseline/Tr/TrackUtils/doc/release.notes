@@ -1,0 +1,683 @@
+!-----------------------------------------------------------------------------
+! Package     : Tr/TrackUtils
+! Responsible : Stephanie Hansmann-Menzemer
+! Purpose     : Package for general utility algorithms
+!-----------------------------------------------------------------------------
+
+! 2016-06-22 - David Hutchcroft
+ - Added code to set the pT of the VELO only tracks with a sign based on the first 
+   strip in the first cluster rather than the track key (which was random).
+
+!========================= TrackUtils v1r65 2016-04-14 =========================
+! 2016-04-17 - Rosen Matev
+ - Add algorithm MoveRecVertexTracks to copy the tracks participating in
+   RecVertices to a new container and update the vertex' track pointers.
+
+! 2016-04-14 - Wouter Hulsbergen
+ - Update previous fix to make it compatible with HLT and Run 1 reco sequences
+
+! 2016-04-13 - Wouter Hulsbergen
+ - TrackV0Finder: adapt to velo-only PV
+
+!========================= TrackUtils v1r64 2016-03-17 =========================
+! 2016-03-17 - Sascha Stahl
+ - TrackCloneCleaner, TrackBuildCloneTable, TrackV0Finder: Add possibility
+   to run with several input locations.
+
+! 2016-03-04 - Michel De Cian
+ - Protect against non-existing input location in TrackContainerCleaner, add two counters.
+
+!========================= TrackUtils v1r63 2016-01-28 =========================
+! 2016-01-25 - Gerhard Raven
+ - speed up TrackBuildCloneTable and TrackCloneCleaner
+   (and modernize the code a bit as well)
+
+! 2015-12-23 - Gerhard Raven
+ - remove dependency on boost::lambda and boost::bind
+ - replace GSL_ with std::
+ - prefer nullptr to 0,NULL, avoid comparing pointers to 0
+ - prefer range-based for loops
+ - remove static
+
+! 2015-12-13 - Michel De Cian
+ - Replace property to set summary location in TrackBestTrackCreator by 
+   predefined location 'LHCb::RecSummary:Track'
+
+! 2015-12-12 - Michel De Cian
+ - Add possibility to write out 'RecSummary' in TrackBestTrackCreator with 
+   number of identified ghosts (maybe used for event index). Default is off 
+   for the moment. Fix indentation.
+
+!========================= TrackUtils v1r62 2015-11-23 =========================
+! 2015-11-11 - Marco Cattaneo
+ - Fix forward broken declaration broken in Gaudi HEAD build 
+
+!========================= TrackUtils v1r61p1 2015-10-13 =========================
+! 2015-08-12 - Gerhard Raven
+ - remove #include of obsolete Gaudi headers
+
+!========================= TrackUtils v1r61 2015-07-20 =========================
+! 2015-07-10 - Michel De Cian
+ - Suppress warning about non-existing container in TrackEraseExtraInfo.
+
+! 2015-06-27 - Michel De Cian
+ - Make list of locations to erase configurable in 'TrackEraseExtraInfo',
+   add print option, remove unnecessary includes, add doxygen comments.
+
+!========================= TrackUtils v1r60 2015-04-21 =========================
+! 2015-04-16 - Sascha Stahl
+ - TrackBestTrackCreator: Added the possibility to save clone killed and fitted 
+   tracks in separate containers according to track type. This is preferred in the Hlt.
+   A separation afterwards in a separate algorithm takes a long time as 
+   fitted tracks are huge. No change in the standard behaviour.					
+! 2015-04-17 - Chris Jones
+ - Change logic in TrackContainerCopy to use obsolete inputLocation instead
+   of inputLocations if that option is set. Warning is issued to change to
+   use the newer list option.
+
+! 2015-04-16 - Chris Jones
+ - Add back the inputLocation to TrackContainerCopy to allow for a proper 
+   deprciation period, as its removal broke the nighlties stripping QM tests.
+   A warning is printed if this option is used. It is an error to set both 
+   inputLocation and inputLocations.
+
+! 2015-04-08 - Michel De Cian
+ - TrackContainerCopy: Now can take more than one input location.
+
+!========================= TrackUtils v1r59 2015-03-31 =======================
+! 2015-03-31 - Sascha Stahl
+ - TrackBestTrackCreator: Added counters of failed fits for each track type.
+
+! 2015-03-29 - Sascha Stahl
+ - TrackBestTrackCreator: Added option to skip fit of already fitted tracks.
+   False by default.
+ - TrackBestTrackCreator: Added option to add ghost probability and to use 
+   it in the selection of good tracks. False by default.
+
+! 2015-03-27 - Maurizio Martinelli
+ - HltTrackConverter: Added option for reading specific SelReports location
+
+!========================= TrackUtils v1r58 2015-02-23 =========================
+! 2015-02-09 - Sascha Stahl
+ - TrackListRefiner: Prevented algorithm from creating a new location in case
+   the input location does not exist.
+
+! 2015-01-27 - Paul Seyfert
+ - changed interface for TrackAddNNGhostId
+
+!========================= TrackUtils v1r57 2014-12-11 =========================
+! 2014-12-10 - Sebastian Neubert
+ - added counters to TrackListRefiner
+
+! 2014-12-10 - Manuel Tobias Schiller
+ - TrackBestTrackCreator: fix a bug which killed too many Velo and T tracks
+   when using ancestor information by postponing the flagging of ancestor
+   tracks until the point in time when the track has been Kalman-fitted and it
+   is clear that it will survive; this change recovers those Velo and T
+   tracks, but the speedup drops to a more pedestrian 3.5%
+
+! 2014-12-09 - Manuel Tobias Schiller
+ - TrackBestTrackCreator: use the ancestor information to get rid of obvious
+   clones early in the process (as is done in TrackEventCloneKiller), this
+   speeds up the algorithm by about 9%, and gets rid of a couple of
+   problematic tracks in T and the Velo before they're fitted (without
+   adversely affecting performance - these tracks usually got killed by the
+   chi^2 cut inside TrackBestTrackCreator after the fit); the number of tracks
+   in the Best container stays unchanged; the new UseAncestorInfo property can
+   be used to restore the old behaviour if needed
+ - factor out the remove_if_partitioned algorithm from TrackEventCloneKiller
+   and TrackBestTrackCreator, and move it to its own header file; adapt
+   TrackEventCloneKiller and TrackBestTrackCreator accordingly   
+
+! 2014-12-09 - Manuel Tobias Schiller
+ - TrackEventCloneKiller: rewrite internal logic so fewer comparisons are
+   needed to determine if two tracks are clones, use Bloom filters for
+   non-overlapping tracks, remove useless (and unused) StoreCloneTrack
+   property from algorithm; efficiency and ghost rate changes are at the
+   permille level, and the algorithm should be 7-15% faster now
+
+! 2014-11-20 - Manuel Tobias Schiller
+ - rewrite TrackBestTrackCreator to take advantage of the Bloom filters in
+   TrackCloneData from TrKernel; also modernise and clarify the code somewhat
+   (C++11, consistent use of generic algorithms where possible)
+   note: the patch will look like a rewrite, but the algorithm is actually
+   the same as before, and the output will match to 100% to what was done
+   before, but takes about 6% less time to execute because of the Bloom filter
+   related improvement
+
+! 2014-11-05 - Michel De Cian
+ - Remove 'TrackMatching' from 'TrackFromDST'
+
+! 2014-10-23 - Michel De Cian
+ - Remove 'TrackSeeding' from 'TrackFromDST' and 'TTrackFromLong'
+
+!========================= TrackUtils v1r56 2014-10-01 =========================
+
+! 2014-09-13 - Sebastian Neubert
+ - TrackEventCloneKiller uses LHCb::Track::Range now. This allows it to run
+   on selections as well as containers.
+
+!========================= TrackUtils v1r55 2014-03-18 =========================
+! 2014-03-17 - Frederic Dupertuis
+ - Add new property MassOffset to ChargedParticlesToTracks.
+
+! 2014-03-04 - Frederic Dupertuis
+ - Add new properties to allow TrackHitAdder to be used for Y alignment.
+
+!========================= TrackUtils v1r54 2014-01-06 =========================
+! 2013-12-15 - Wouter Hulsbergen
+ - Removed UT from TrackHitAdder since it was apparently never tested
+ and it broke the alignment sequence.
+
+!========================= TrackUtils v1r53 2013-12-10 =========================
+! 2013-12-06 - Rob Lambert
+ - Adapt to change in IANSvc, Gaudi::StringKey, see task #48818
+
+! 2013-12-01 - Michel De Cian
+ - Add PrForward track history to TrackEventCloneKiller
+
+! 2013-11-28 - Michel De Cian
+ - Add upgrade histories to TrackFromDST
+
+!========================= TrackUtils v1r52p2 2013-07-18 =========================
+! 2013-06-05 - Marco Cattaneo
+ - Add missing TfKernel dependency
+
+!========================= TrackUtils v1r52p1 2013-06-03 =======================
+! 2013-05-27 - Marco Cattaneo
+ - Fix clang32 warnings
+
+!========================= TrackUtils v1r52 2013-04-30 =========================
+! 2013-04-04 - Wouter Hulsbergen
+ - change TrackBestTrackCreator to use TrackKernel/TrackCloneData
+
+! 2013-03-24 - Wouter Hulsbergen
+ - prepare TrackComputeExpectedHits for change in HitPattern
+
+!========================= TrackUtils v1r51 2013-03-22 =========================
+! 2013-03-11 - Marco Clemencic
+ - Fixed compilation with C++11.
+ 
+!========================= TrackUtils v1r50 2013-02-14 =========================
+! 2013-01-29 - Jianchun Wang
+ - Add UT in TrackHitAdder.
+
+! 2013-01-14 - Frederic Dupertuis
+ - Adding ChargedParticlesToTracks algo that dumps tracks from charged particles
+   (refitting, mother's mass window cut).
+
+! 2012-12-05 - Olivier Callot
+ - Change the name of the OTHitCreator in TrackHitAdder
+
+!========================= TrackUtils v1r49 2012-11-28 =========================
+! 2012-11-26 - Marco Clemencic
+ - Fixed build with C++11.
+
+! 2012-11-22 - Marco Clemencic
+ - Added CMake configuration file.
+
+! 2012-11-16 - Marco Cattaneo
+ - Fix gcc --pedantic warnings
+ - Fix Coverity defects
+ - Use getIfExists
+ - Remove 'do nothing' initialize and finalize methods, delegate to base class
+
+! 2012-09-10 - Paul Seyfert
+ - use getIfExists in TrackAddNNGhostId
+
+!========================= TrackUtils v1r48 2012-07-24 =========================
+! 2012-07-19 - Paul Seyfert
+ - Keep LHCb::Track::NCandCommonHits on DSTs for ghost probability computation
+   in DaVinci
+
+! 2012-07-06 - Wouter Hulsbergen
+- Loosened cuts in TrackV0Finder to make it much more efficient for Ks from B.
+  Minimized use of extrapolator.
+ 
+!========================= TrackUtils v1r47 2012-05-08 =========================
+! 2012-05-08 - Jeroen Van Tilburg
+ - TrackBestTrackCreator: Changed to dynamic array (vector) for the size of the
+   LHCbIDs in the internal track container. Fixes bug #94407
+
+!========================= TrackUtils v1r46 2012-05-02 =========================
+! 2012-04-29 - Wouter Hulsbergen
+ - changes in TrackBestTrackCreator: tightened chi2 cut to 3 and removed dqop cut
+
+! 2012-04-23 - Wouter Hulsbergen
+ - Replaced some hard coded cuts by properties in TrackBestTrackCreator
+
+! 2012-04-18 - Wouter Hulsbergen
+ - Added TrackBestTrackCreator
+
+!========================= TrackUtils v1r45 2012-03-27 =========================
+! 2012-03-14 - Marco Cattaneo
+ - Fix an unprotected verbose() message
+ - Fix UNINIT_CTOR defects
+
+!========================= TrackUtils v1r44 2012-01-31 =========================
+! 2012-01-27 - Chris Jones
+ - Update the default list of track states to keep in TrackToDST
+
+! 2012-01-23 - Chris Jones
+ - Some improvements to TrackToDST
+  + Fully support stripping of Muon Tracks
+  + Strip Track::Velo tracks in the same way as Track::VeloR
+
+! 2011-12-19 - Wouter Hulsbergen
+ - remove use of Track::nodes() in TrackV0Finder
+
+!========================= TrackUtils v1r43p1 2011-12-15 =====================
+! 2011-11-22 - Marco Cattaneo
+ - Fix trivial gcc46 warnings and icc remarks
+
+!========================= TrackUtils v1r43 2011-07-27 =======================
+! 2011-07-22 - Marco Cattaneo
+ - Create debug() messages only when output level requires it,
+   also using UNLIKELY macro
+ - Replace all endreq by endmsg
+
+!========================= TrackUtils v1r42 2011-06-15 =========================
+! 2011-06-14 - Wouter Hulsbergen
+ - TrackEventCloneKiller:
+   - fixed untested statuscode introduced in previous commit
+   - removed unused datamember for tool type
+
+! 2011-06-10 - Wouter Hulsbergen
+ - changes in HltTrackConverter
+   - fix bug in  HltTrackConverter::CloneRemoval
+   - check validity of OTHits in HltTrackConverter
+ - make clonetool a toolhandle in TrackEventCloneKiller
+ - use the correct ST hit adders in TrackHitAdder
+
+!========================= TrackUtils v1r41 2011-02-28 =========================
+! 2011-02-13 - Chris Jones
+ - Add missing use statement in requirements file for HltEvent
+
+!========================= TrackUtils v1r40 2011-02-02 =======================
+! 2010-10-27 - Stephanie Hansmann-Menzemer
+  Make TrackAddLikelkhood and TrackFromDST algorithm aware of new track histories
+
+!========================= TrackUtils v1r39p1 2010-10-28 =====================
+! 2010-10-20 - Gerhard Raven
+ - replace include of ANNSvc with IANNSvc
+
+!========================= TrackUtils v1r39 2010-09-27 =========================
+! 2010-09-26 - Wouter Hulsbergen
+ - fix bug in TrackHitAdder (Frederic Dupertuis)
+
+!========================== TrackUtils v1r38 2010-08-25 ======================
+! 2010-08-24 - Rob Lambert
+ - TrackHitAdder, supress warnings in windows, converting from double to float
+   and this used for tool handle
+
+! 2010-08-20 - Wouter Hulsbergen
+ - Add FirstMeasurement state to long and upstream tracks
+ - TrackHitAdder now also adds velo hits (using Manuel's code)
+ - tightened some cuts on TrackV0Finder; add state-at-vertex to tracks
+
+! 2010-07-30 - Olivier Callot
+ - Add PatMatch and PatSeeding as known tracks in TrackAddLikeliood.cpp
+
+!========================== TrackUtils v1r37 2010-06-21 ======================
+! 2010-06-17 - Olivier Callot
+ - Add new algorithms FilterMatchTracks, FilterDownstreamTracks and 
+   FilterSeedTracks to remove tracks identical/inclued to previously
+   foudn ones, before the fit. Tis is to be faster...
+
+!2010-06-14 - Albert Bursche
+ - added HltTrackConverter (still needs testing)
+
+! 2010-06-10 - V. Gligorov
+ - Remove obsolete default HLT track locations. 
+
+! 2010-06-08 - Rob Lambert
+ - Fix final windows warning
+
+! 2010-06-07 - Rob Lambert
+ - Fixes for windows warnings savannah task #15808
+
+!========================== TrackUtils v1r36 2010-04-26 ======================
+! 2010-04-15 Wouter Hulsbergen
+ - Added VertexListRefiner and VertexListFilter for use in Alignment
+
+!========================== TrackUtils v1r35 2010-02-15 ======================
+! 2010-03-26 - David Hutchcroft
+ - Added an option to TrackPrepareVelo to reverse the arbitary charge assigned 
+   to VELO only tracks for the field reversed qm test.
+
+!========================== TrackUtils v1r34 2010-02-15 ======================
+! 2010-01-28 - Wouter Hulsbergen
+ - added TrackHitAdder
+
+!========================== TrackUtils v1r33p1 2010-02-02 ======================
+! 2010-02-02 - Wouter Hulsbergen for Marco Cattaneo
+ - fixed bug in TrackV0Finder: output container would be missing in events
+   w/o primary vertex
+
+!========================== TrackUtils v1r33 2010-01-21 ======================
+! 2010-01-05 - Wouter Hulsbergen
+ - add TrackListMerger and TrackListRefiner
+ - access containers by Range in TrackContainerCopy
+
+!========================== TrackUtils v1r32 2009-12-11 ======================
+! 2009-12-10 - Wouter Hulsbergen
+ - Small modifications in TrackV0Finder: mostly just adding more properties. 
+   no actual change in cuts.
+
+!========================== TrackUtils v1r31 2009-11-13 ======================
+! 2009-11-11 - Marco Cattaneo
+ - Fix untested StatusCodes on calls to Warning and Error
+ - Fix a Windows warning
+
+! 2009-10-23 - Johannes Albrecht
+ - TrackAddNNGhostId: make ghostId tool private
+
+!========================== TrackUtils v1r30 2009-10-17 ======================
+! 2009-10-15 - Patrick Koppenburg
+ - Move HltInsertTrackErrParam from HltSelections
+   . This is the ominous algorithm that hacks the errors and replaces
+     them by some P-dependent value. To be revised.
+ - Move NumberOfTracksFilter from HltSelections
+   . setFilterPassed depending number of tracks in a container
+ - Increment to v1r30
+
+! 2009-10-07 - Johannes Albrecht
+ - add initial relese of TrackAddNNGhostId algorithm
+
+!========================== TrackUtils v1r29 2009-09-03 ======================
+! 2009-09-01 - Stephanie Hansmann-Menzemer
+- HitPattern is not anymore member of Track class, adapt ComputeExpectedTrackInfo
+
+! 2009-08-27 - Stephanie Hansmann-Menzemer
+- Adapt to another change in HitPattern class 
+
+! 2009-08-11 - Stephanie Hansmann-Menzemer
+- Adapt to changes in HitPattern class
+
+! 2009-08-04 - Stephanie Hansmann-Menzemer
+- Add algorithm to fill expected hit information
+- Add algorithm to clean track extra info
+
+!========================== TrackUtils v1r28 2009-07-14 ======================
+! 2009-07-14 - Marco Cattaneo
+ - Remove obsolete file TrackUtils_dll.cpp
+
+! 2009-07-09 Wouter Hulsbergen
+ - added test of vertex pointer returned by TrackVertexer in TrackV0Finder
+
+! 2009-07-08 Wouter Hulsbergen
+ - adapted to migration of track classes to TrackKernel
+
+!========================== TrackUtils v1r27 2009-06-29 ======================
+! 2009-06-26 - Wouter Hulsbergen
+- adapt to fix in ITrackCloneFider interface
+
+!========================== TrackUtils v1r26 2009-05-11 ======================
+! 2009-05-10 - Georg Krocker
+- small bug in TrackEventCloneKiller fixed
+
+! 2009-05-08 - Georg Krocker
+- added possibility to just set the flag LHCb::Track::Clone for found 
+  clonetracks and not copy the tracks to an output container in 
+  TrackEventCloneKiller
+
+! 2009-04-07 - Manuel Tobias Schiller
+ - added possibility to deep-copy tracks into keyed containers in
+   CreateFastTrackCollection to make the migration easier - users can select
+   if they want the old containers which can be used without changes to user
+   code or the new fast containers (which remain the default)
+
+!========================== TrackUtils v1r25 2009-03-10 ======================
+! 2009-03-06 - Marco Cattaneo
+ - Fix untested StatusCode in TrackV0Finder
+
+! 2009-02-25 - Manuel Tobias Schiller
+ - Added CreateFastTrackCollection algorithm which copies pointers to tracks
+   from a list of input container to a SharedObjectsContainer on the TES.
+   This gives the possibility to quickly create custom track collections
+   without the cost of keyed containers and deep-copying the tracks. Potential
+   use case might be a collection of all long tracks in the HLT.
+
+!========================== TrackUtils v1r24 2009-02-20 ======================
+! 2009-01-20 - Marco Cattaneo
+ - Migrate to LHCb::ParticlePropertySvc
+
+!========================== TrackUtils v1r23 2009-01-13 ======================
+! 2009-01-13 - Wouter Hulsbergen
+ - fixed unchecked statuscodes
+ - make sure V0 daughters do not share VELO segment
+
+! 2009-01-12 - Wouter Hulsbergen
+ - introduced tool handles for interpolator and extrapolator in TrackV0Finder
+
+! 2008-12-02 - Wouter Hulsbergen
+ - adapted to change in Track::stateAt
+ - allow trackcontainercopy without selector
+ - added cuts to TrackV0Finder
+
+! 2008-11-29 - M Needham
+ - Add TrackCompetition algorithm
+ 
+!========================== TrackUtils v1r22 2008-11-21 ======================
+! 2008-10-23 - Jan Amoraal
+ - Make TrackEventCloneKiller less verbose at initialisation. 
+   Used to print all properties.
+
+! 2008-10-20 - Wouter Hulsbergen
+ - Added TrackListFilter
+
+!========================== TrackUtils v1r21 2008-07-17 ======================
+! 2008-05-28 - Louis Nicolas
+ - TrackRemoveDoubleHits: Go back to removing lhcbIDs. User has to make sure
+   where in the sequence he's using it: before the fit.
+
+! 2008-05-27 - Louis Nicolas
+ - TrackRemoveDoubleHits: Bug fix
+
+! 2008-05-21 - Louis Nicolas
+ - TrackRemoveDoubleHits: separated OT double hits in acceptable (high tx) / not
+    acceptable.
+ - TrackRemoveDoubleHits: remove measurements from tracks and set node as Outlier
+   instead of removing LHCbIDs
+
+!========================== TrackUtils v1r20 2008-05-05 ======================
+! 2008-05-05 - Adrian Perieanu
+ - Update of TrackEventCloneKiller for speed and lower clone rate
+
+!========================== TrackUtils v1r19 2008-04-22 ======================
+! 2008-04-22 - Marco Cattaneo
+ - Fix TrackRemoveDoubleHits to compile on Windows (using abs on unsigned int)
+
+! 2008-04-22 - Stephanie Hansmann-Menzemer
+ - Bug fix in TrackFromDST for backward compatibility,
+   add PatKShort tracks (old name of PatDownstream tracks)
+   in PatDownstream collection.
+
+! 2008-03-27 - Louis Nicolas
+ - Moved algorithm TrackRemoveDoubleITHits to TrackRemoveDoubleHits:
+   now removes all double hits: in IT, OT and TT (two kinds: same sector and
+   different sectors)
+
+! 2008-01-29 - Stephanie Hansmann-Menzemer
+ - Add list of states to be written out for muon tracks in TrackToDST
+
+!========================== TrackUtils v1r18 2007-12-20 ======================
+! 2007-12-20 - Marco Cattaneo
+ - Fix TrackV0Finder to follow changes in TwoProngVertex.h 
+
+!========================== TrackUtils v1r17 2007-12-04 ======================
+! 2007-12-03 - Wouter Hulsbergen
+ - Added TrackV0Finder
+
+! 2007-11-27 - Stephanie Hansmann-Menzemer
+ - Remove removal of measurements in TrackToDST, not needed since measurements
+   are in any case transient only members of Track
+
+!========================== TrackUtils v1r16 2007-10-23 ======================
+! 2007-10-23 - Marco Cattaneo
+ - Adapt to change in Track flag name from KsTrack to Downstream
+
+!========================== TrackUtils v1r15 2007-10-05 ======================
+! 2007-10-03 M Needham
+ - Changes in TrackAddLikelihood to allow different values for different
+   track types
+
+!========================== TrackUtils v1r14 2007-09-20 ======================
+! 2007-09-20 - Louis Nicolas
+ - TrackRemoveDoubleITHits: add possibility to keep the hit with highest charge
+   of the two or to keep the hit with high threshold (if only one of the
+   two). Otherwise, remove both hits from the track.
+
+! 2007-09-14 - Louis Nicolas
+ - new algorithm TrackRemoveDoubleITHits: when two hits are found in the same IT
+    ladder, remove both lhcbIDs from the track's lhcbIDs. Probably useful for
+    alignment.
+
+! 2007-09-14 - Chris Jones
+ - Clean up TrackBuildClone table a little for speed
+ - Update TrackCloneCleaner to instead of creating a new 'cleaned' track
+   container, simply flag those tracks in the original container that are
+   likely clone candidates
+
+! 2007-09-11 M Needham
+ - Add algorithm that adds likelihood to the track
+
+! 2007-08-28 M Needham
+ - Add clone killing algorithms based on relative entropy
+ 
+! 2007-08-28 M Needham 
+ - Add selection possibility to TrackContainer copy
+
+!========================== TrackUtils v1r13 2007-07-05 ======================
+! 2007-07-04 - David Hutchcroft
+ - Fixed TrackToDST for PatVeloR tracks so that states correctly prepared
+   (also fixed warning)
+
+!========================== TrackUtils v1r12 2007-03-28 ======================
+! 2007-03-22 - David Hutchcroft
+ - Made TrackPrepareVelo set q/p for all VELO states (if more than one)
+
+!========================== TrackUtils v1r11 2007-03-21 ======================
+! 2007-03-21 - Marco Cattaneo
+ - Remove obsolete file TrackUtils_load.cpp
+ - Fix doxygen warnings
+
+! 2007-03-21 - Steve Blusk
+ - Fix bug in PrepareVelo track selection in case when Best container is ignored
+
+!========================== TrackUtils v1r10 2007-01-16 ======================
+! 2007-01-16 M. Needham
+ - Add new TrackPrepareForFit algorithm
+
+!========================== TrackUtils v1r9 2006-11-23 =======================
+! 2006-11-23 - Eduardo Rodrigues
+ - easy test to speed up TrackPrepareVelo: speed improvement by factor 3!
+
+!========================== TrackUtils v1r8 2006-11-06 =======================
+! 2006-11-06 - Marco Cattaneo
+ - use DECLARE_ALGORITHM_FACTORY macro
+
+! 2006-11-03 M Needham
+ - Bug fix in TrackPrepareVelo  
+
+! 2006-11-03 M Needham
+ - Add FirstMeasurement state to T state list for DST writing  
+
+! 2006-10-19 - Eduardo Rodrigues
+ - TrackFromDST keeps the key of the original track in the "best" container
+ - modified TrackPrepareVelo so that Velo tracks ancestors of tracks in the
+   "best" container can be ignored
+
+!========================== TrackUtils v1r7 2006-10-03 =======================
+! 2006-10-03 - Thomas Ruf
+ - fixed probable bug in TrackPrepareVelo, wrong indices in vec
+
+! 2006-09-19 - Eduardo Rodrigues
+ - new algorithm TrackFromDST: it classifies the tracks given as input
+   according to their History / pattern recognition algorithms
+   (used for taking tracks from the "best" container and remaking the original
+   containers that were originally put together in the best container at the
+   end of the tracking sequence in Brunel)
+
+!========================== TrackUtils v1r6 2006-08-31 =======================
+! 2006-08-31 - Eduardo Rodrigues
+ - speed improvements to TrackEventCloneKiller
+
+! 2006-08-22 - Eduardo Rodrigues
+ - Kshort tracks from PatKShort added to TrackEventCloneKiller's default input
+
+!========================== TrackUtils v1r5 2006-08-21 =======================
+! 2006-08-18 - Eduardo Rodrigues
+ - more code and speed improvements in TrackEventCloneKiller
+
+! 2006-08-14 - Eduardo Rodrigues
+ - many improvements to TrackEventCloneKiller:
+   - ancestor tracks first removed from list of tracks to be considered.
+     Note: they are flagged as clone tracks
+   - added flag to skip clone comparison between tracks in same container
+     (default skips the comparison)
+   - default input tracks locations set in .cpp file
+   - removal of "using namespace ..."
+
+! 2006-08-07 - Eduardo Rodrigues
+ - bug fix corrected in option name of TrackPrepareVelo
+
+!========================== TrackUtils v1r4 2006-07-27 =======================
+! 2006-07-27 - Marco Cattaneo
+ - Add bool "copyFailures" option to TrackContainerCopy, by default does not copy
+   tracks that failed the track fit 
+ - Add some debug to TrackToDst
+
+! 2006-07-21 M. Needham
+ - Protect against missing states
+
+! 2006-07-12 - M Needham
+ - Allow filtering of any set of states from any set of Tracks in TrackToDST
+
+!========================== TrackUtils v1r3 2006-06-30 =======================
+! 2006-06-28 - Matt Needham
+ - Make Selector private tool of TrackContainerCleaner
+
+!========================== TrackUtils v1r2 2006-06-21 =======================
+! 2006-06-21 - Matt Needham
+ - Proper garbage collection
+
+! 2006-06-20 - Eduardo Rodrigues
+ - TrackToDST:
+   - now it also removes all the Measurements on the Track, and the
+     appropriate status flag is set
+   - algorithm's properties names changed, for consistency with all TrackXxx
+ - fix in TrackEventCloneKiller
+ - propagation of changes from TrackEvent
+
+! 2006-06-20 - Matt Needham
+ - Bug fix in TrackPrepareVelo
+
+! 2006-06-14 - Eduardo Rodrigues
+ - changes and improvements to clone killer algorithm:
+   - can also run on non-fitted tracks
+   - bug fix in loop over tracks
+   - debugging added
+
+!2006-06-14 M Needham
+ - Add track cleaning algorithm
+ - Bug fixes in TTrackFromLong 
+
+!2006-06-13 M Needham
+ - Add algorithms to copy tracks from one container to another
+   plus the infamous TrackPrepareVelo
+
+!2006-06-08 M Needham
+ - Add algorithm to make T tracks from forward
+
+!2006-05-24 - M Needham
+ - Add TrackContainerCleaner algorithm
+
+!========================== TrackUtils v1r1 2006-05-03 =======================
+! 2006-05-02 - Eduardo Rodrigues
+ - propagation of change Track::Unique -> Track::Clone in Event/TrackEvent
+
+!========================== TrackUtils v1r0 2006-03-13 =======================
+! 2006-03-01 - Eduardo Rodrigues
+ - first release of the package.
+   Contains the event clone killer algorithm TrackEventCloneKiller

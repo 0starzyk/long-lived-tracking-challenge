@@ -1,0 +1,241 @@
+# setting LC_ALL to "C"
+# --> Including file '/home/kstarzyk/LocalTrackReco/OptionFiles/Baseline.py'
+/***** User ApplicationOptions/ApplicationOptions **************************************************
+|-append_decoding_keys_to_output_manifest = True  (default: True)
+|-auditors                                = []  (default: [])
+|-buffer_events                           = 20000  (default: 20000)
+|-conddb_tag                              = 'sim-20180530-vc-md100'  (default: '')
+|-conditions_version                      = 'master'  (default: '')
+|-control_flow_file                       = ''  (default: '')
+|-data_flow_file                          = ''  (default: '')
+|-data_type                               = 'Upgrade'  (default: 'Upgrade')
+|-dddb_tag                                = 'dddb-20190223'  (default: '')
+|-event_store                             = 'HiveWhiteBoard'  (default: 'HiveWhiteBoard')
+|-evt_max                                 = 1000  (default: -1)
+|-first_evt                               = 0  (default: 0)
+|-geometry_version                        = 'trunk'  (default: '')
+|-histo_file                              = 'output_hist_0.94.root'  (default: '')
+|-input_files                             = ['root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000021_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000043_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000026_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000029_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000042_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000025_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000049_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000054_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000058_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000063_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000055_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000076_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000086_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000088_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000007_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000031_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000027_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000036_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000047_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000066_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000065_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000094_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000005_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000019_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000015_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000035_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000039_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000060_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000052_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000062_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000071_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000099_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000004_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000008_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000003_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000016_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000030_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000034_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000024_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000046_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000053_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000057_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000056_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000061_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000084_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000083_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000085_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000095_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000091_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000006_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000009_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000001_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000040_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000028_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000044_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000048_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000064_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000069_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000080_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000082_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000090_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000010_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000020_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000023_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000011_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000017_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000033_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000041_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000070_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000077_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000078_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000081_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000002_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000013_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000018_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000014_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000012_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000032_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000089_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000022_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000037_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000038_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000045_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000051_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000072_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000059_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000073_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000067_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000068_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000074_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000075_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000079_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000087_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000096_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000097_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000093_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000092_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000098_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000005_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000006_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000044_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000029_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000043_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000048_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000019_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000046_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000068_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000061_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000076_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000088_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000013_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000024_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000053_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000028_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000058_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000035_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000030_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000025_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000062_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000074_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000079_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000089_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000055_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000042_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000023_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000039_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000066_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000009_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000001_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000059_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000016_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000040_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000015_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000018_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000041_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000050_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000036_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000065_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000070_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000064_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000067_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000073_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000087_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000092_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000002_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000038_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000054_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000060_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000049_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000027_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000047_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000075_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000003_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000051_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000031_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000045_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000063_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000071_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000078_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000083_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000084_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000086_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000007_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000008_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000004_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000014_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000026_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000022_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000033_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000072_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000077_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000081_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000080_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000037_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000020_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000056_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000057_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000034_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000032_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000012_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000021_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000017_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000052_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000069_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000082_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000091_2.xdst', 'root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00102230/0000/00102230_00000090_2.xdst']
+|                                         (default: [])
+|-input_manifest_file                     = ''  (default: '')
+|-input_raw_format                        = 4.3  (default: 0.5)
+|-input_type                              = 'ROOT'  (default: '')
+|-lines_maker                             = None
+|-memory_pool_size                        = 10485760  (default: 10485760)
+|-monitoring_file                         = ''  (default: '')
+|-msg_svc_format                          = '% F%35W%S %7W%R%T %0W%M'  (default: '% F%35W%S %7W%R%T %0W%M')
+|-msg_svc_time_format                     = '%Y-%m-%d %H:%M:%S UTC'  (default: '%Y-%m-%d %H:%M:%S UTC')
+|-n_event_slots                           = 1  (default: -1)
+|-n_threads                               = 1  (default: 1)
+|-ntuple_file                             = 'output_tuple_0.94.root'  (default: '')
+|-output_file                             = 'hlt2_example.dst'  (default: '')
+|-output_level                            = 3  (default: 3)
+|-output_manifest_file                    = 'hlt2_example.tck.json'  (default: '')
+|-output_type                             = 'ROOT'  (default: '')
+|-phoenix_filename                        = ''  (default: '')
+|-preamble_algs                           = []  (default: [])
+|-print_freq                              = 10000  (default: 10000)
+|-python_logging_level                    = 20  (default: 20)
+|-require_specific_decoding_keys          = []  (default: [])
+|-scheduler_legacy_mode                   = True  (default: True)
+|-simulation                              = True  (default: True)
+|-use_iosvc                               = False  (default: False)
+|-velo_motion_system_yaml                 = ''  (default: '')
+|-write_decoding_keys_to_git              = True  (default: True)
+\----- (End of User ApplicationOptions/ApplicationOptions) -----------------------------------------
+# Overrule specified for keys 
+# <-- End of file '/home/kstarzyk/LocalTrackReco/OptionFiles/Baseline.py'
+ApplicationMgr    SUCCESS 
+====================================================================================================================================
+                                                   Welcome to MooreEnhanced version 0
+                                          running on lhcbd1.fis.agh.edu.pl on Mon Jan  8 14:30:25 2024
+====================================================================================================================================
+ApplicationMgr       INFO Application Manager Configured successfully
+ToolSvc.GitDDDB                        INFO opening Git repository '/cvmfs/lhcb.cern.ch/lib/lhcb/git-conddb/DDDB.git'
+ToolSvc.GitDDDB                        INFO using commit 'upgrade/dddb-20190223' corresponding to c444749be50b56d937872a46368a95e0e716e784
+ToolSvc.GitSIMCOND                     INFO opening Git repository '/cvmfs/lhcb.cern.ch/lib/lhcb/git-conddb/SIMCOND.git'
+ToolSvc.GitSIMCOND                     INFO using commit 'upgrade/sim-20180530-vc-md100' corresponding to 7db2a32a63761eda1338a12fc643c76a22f55a62
+DetectorPersistencySvc                 INFO Added successfully Conversion service:XmlCnvSvc
+DetectorDataSvc                     SUCCESS Detector description database: git:/lhcb.xml
+EventClockSvc.FakeEventTime            INFO Event times generated from 0 with steps of 0
+EventClockSvc.FakeEventTime            INFO Run numbers generated from 0 every 0 events
+MagneticFieldGridReader INFO  Opened magnetic field file:  /cvmfs/lhcb.cern.ch/lib/lhcb/DBASE/FieldMap/v5r7/cdf//field.v5r0.c1.down.cdf
+MagneticFieldGridReader INFO  Opened magnetic field file:  /cvmfs/lhcb.cern.ch/lib/lhcb/DBASE/FieldMap/v5r7/cdf//field.v5r0.c2.down.cdf
+MagneticFieldGridReader INFO  Opened magnetic field file:  /cvmfs/lhcb.cern.ch/lib/lhcb/DBASE/FieldMap/v5r7/cdf//field.v5r0.c3.down.cdf
+MagneticFieldGridReader INFO  Opened magnetic field file:  /cvmfs/lhcb.cern.ch/lib/lhcb/DBASE/FieldMap/v5r7/cdf//field.v5r0.c4.down.cdf
+MagneticFieldSvc                       INFO Map scaled by factor 1 with polarity internally used: -1 signed relative current: -1
+Gaudi__Histograming__Sink__Root        INFO Writing ROOT histograms to: output_hist_0.94.root
+NTupleSvc                              INFO Added stream file:output_tuple_0.94.root as FILE1
+HLTControlFlowMgr                      INFO Start initialization
+RootHistSvc                            INFO Writing ROOT histograms to: output_tuple_0.94.root
+HistogramPersistencySvc                INFO Added successfully Conversion service:RootHistSvc
+DeFTDetector                           INFO Current FT geometry version =   64
+HLTControlFlowMgr                      INFO Concurrency level information:
+HLTControlFlowMgr                      INFO  o Number of events slots: 1
+HLTControlFlowMgr                      INFO  o TBB thread pool size:  'ThreadPoolSize':1
+HLTControlFlowMgr                      INFO ---> End of Initialization. This took 27167 ms
+ApplicationMgr                         INFO Application Manager Initialized successfully
+ApplicationMgr                         INFO Application Manager Started successfully
+EventPersistencySvc                    INFO Added successfully Conversion service:RootCnvSvc
+EventSelector                          INFO Stream:EventSelector.DataStreamTool_1 Def:DATAFILE='root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000021_2.xdst' SVC='Gaudi::RootEvtSelector' OPT='READ' IgnoreChecksum='YES'
+HLTControlFlowMgr                      INFO Will measure time between events 100 and 900 (stop might be some events later)
+HLTControlFlowMgr                      INFO Starting loop on events
+EventSelector                       SUCCESS Reading Event record 1. Record number within stream 1: 1
+FTRawBankDecoder                       INFO Conditions DB is compatible with FT bank version 4, 5, 6.
+HLTControlFlowMgr                      INFO Timing started at: 14:32:05
+HLTControlFlowMgr                      INFO Timing stopped at: 14:33:33
+HLTControlFlowMgr                      INFO ---> Loop over 1000 Events Finished -  WSS 1611.91, timed 800 Events: 87829 ms, Evts/s = 9.10861
+Gaudi__Histograming__Sink__Root        INFO Completed update of ROOT histograms in: output_hist_0.94.root
+DownstreamTrackChecker.LoKi::Hyb...    INFO Number of counters : 1
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "# loaded from PYTHON"                          |        14 |
+PrGECFilter                            INFO Number of counters : 2
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "Nb Events Processed"                           |      1000 |
+ | "Nb events removed"                             |       174 |
+PrHybridSeeding                        INFO Number of counters : 21
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "Created T2x1 three-hit combinations in case 0" |   2092123 |    1293929 |    0.61848 |    0.63134 |      0.0000 |      6.0000 |
+ | "Created T2x1 three-hit combinations in case 1" |   3021991 |    2025210 |    0.67016 |    0.75893 |      0.0000 |      12.000 |
+ | "Created T2x1 three-hit combinations in case 2" |   5295301 |    4445557 |    0.83953 |     1.0293 |      0.0000 |      24.000 |
+ | "Created XZ tracks (part 0)"                    |      2478 |     193482 |     78.080 |     72.551 |      1.0000 |      775.00 |
+ | "Created XZ tracks (part 1)"                    |      2478 |     192615 |     77.730 |     68.858 |      0.0000 |      726.00 |
+ | "Created XZ tracks in case 0"                   |      1652 |     118654 |     71.824 |     48.514 |      2.0000 |      333.00 |
+ | "Created XZ tracks in case 1"                   |      1652 |     138426 |     83.793 |     67.232 |      0.0000 |      513.00 |
+ | "Created XZ tracks in case 2"                   |      1652 |     129017 |     78.097 |     89.790 |      1.0000 |      775.00 |
+ | "Created full hit combinations in case 0"       |    196363 |     196363 |     1.0000 |     0.0000 |      1.0000 |      1.0000 |
+ | "Created full hit combinations in case 1"       |    166958 |     166958 |     1.0000 |     0.0000 |      1.0000 |      1.0000 |
+ | "Created full hit combinations in case 2"       |    203463 |     203463 |     1.0000 |     0.0000 |      1.0000 |      1.0000 |
+ | "Created seed tracks"                           |      1652 |     106585 |     64.519 |     24.009 |      5.0000 |      130.00 |
+ | "Created seed tracks (part 0)"                  |       826 |      60656 |     73.433 |     27.954 |      5.0000 |      152.00 |
+ | "Created seed tracks (part 1)"                  |       826 |      60746 |     73.542 |     27.991 |      6.0000 |      150.00 |
+ | "Created seed tracks in case 0"                 |      1652 |      55025 |     33.308 |     13.409 |      1.0000 |      76.000 |
+ | "Created seed tracks in case 1"                 |      1652 |     100999 |     61.137 |     22.889 |      5.0000 |      132.00 |
+ | "Created seed tracks in case 2"                 |      1652 |     114525 |     69.325 |     26.527 |      5.0000 |      145.00 |
+ | "Created seed tracks in recovery step"          |       826 |       6877 |     8.3257 |     4.5122 |      0.0000 |      29.000 |
+ | "Created two-hit combinations in case 0"        |    305739 |    7762980 |     25.391 |     16.551 |      0.0000 |      172.00 |
+ | "Created two-hit combinations in case 1"        |    271223 |    9803603 |     36.146 |     19.981 |      0.0000 |      153.00 |
+ | "Created two-hit combinations in case 2"        |    229395 |1.288955e+07 |     56.189 |     31.098 |      1.0000 |      205.00 |
+PrLHCbID2MCParticle                    INFO Number of counters : 1
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "#removed null MCParticles"                     |   6595160 |          0 |     0.0000 |
+PrLongLivedTracking                    INFO Number of counters : 1
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "#Downstream tracks made"                       |       826 |        163 |    0.19734 |
+PrStorePrUTHits                        INFO Number of counters : 1
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "#banks"                                        |       826 |     148680 |     180.00 |
+PrStoreSciFiHits                       INFO Number of counters : 25
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "Average X in T1U"                              |    308241 |   -8892574 |    -28.849 |     1198.1 |     -2656.4 |      2656.3 |
+ | "Average X in T1V"                              |    310763 |   -5619134 |    -18.082 |     1189.8 |     -2656.2 |      2656.2 |
+ | "Average X in T1X1"                             |    305739 |-1.502482e+07 |    -49.143 |     1215.6 |     -2646.2 |      2646.2 |
+ | "Average X in T1X2"                             |    313408 |   -2014816 |    -6.4287 |     1184.0 |     -2646.1 |      2646.2 |
+ | "Average X in T2U"                              |    297790 |   -4299516 |    -14.438 |     1198.1 |     -2656.4 |      2656.2 |
+ | "Average X in T2V"                              |    305274 |   -2966729 |    -9.7183 |     1188.8 |     -2656.4 |      2656.3 |
+ | "Average X in T2X1"                             |    288485 |   -4072686 |    -14.117 |     1204.9 |     -2646.1 |      2646.2 |
+ | "Average X in T2X2"                             |    314147 |   -2795287 |    -8.8980 |     1184.3 |     -2646.2 |      2646.2 |
+ | "Average X in T3U"                              |    328615 |   -3077865 |    -9.3662 |     1413.7 |     -3188.4 |      3188.4 |
+ | "Average X in T3V"                              |    337548 |   -5374667 |    -15.923 |     1410.9 |     -3188.3 |      3188.4 |
+ | "Average X in T3X1"                             |    318364 |   -3009748 |    -9.4538 |     1417.1 |     -3176.2 |      3176.2 |
+ | "Average X in T3X2"                             |    346332 |   -5691095 |    -16.432 |     1400.7 |     -3176.2 |      3176.0 |
+ | "Hits in T1U"                                   |      3304 |     308241 |     93.293 |     29.975 |      15.000 |      265.00 |
+ | "Hits in T1V"                                   |      3304 |     310763 |     94.057 |     30.236 |      18.000 |      262.00 |
+ | "Hits in T1X1"                                  |      3304 |     305739 |     92.536 |     30.634 |      17.000 |      280.00 |
+ | "Hits in T1X2"                                  |      3304 |     313408 |     94.857 |     30.560 |      12.000 |      230.00 |
+ | "Hits in T2U"                                   |      3304 |     297790 |     90.130 |     28.265 |      14.000 |      271.00 |
+ | "Hits in T2V"                                   |      3304 |     305274 |     92.395 |     29.117 |      17.000 |      276.00 |
+ | "Hits in T2X1"                                  |      3304 |     288485 |     87.314 |     27.977 |      9.0000 |      352.00 |
+ | "Hits in T2X2"                                  |      3304 |     314147 |     95.081 |     30.021 |      18.000 |      259.00 |
+ | "Hits in T3U"                                   |      3304 |     328615 |     99.460 |     30.103 |      18.000 |      282.00 |
+ | "Hits in T3V"                                   |      3304 |     337548 |     102.16 |     30.898 |      19.000 |      253.00 |
+ | "Hits in T3X1"                                  |      3304 |     318364 |     96.357 |     29.131 |      19.000 |      227.00 |
+ | "Hits in T3X2"                                  |      3304 |     346332 |     104.82 |     31.787 |      20.000 |      253.00 |
+ | "Total number of hits"                          |       826 |    3774706 |     4569.9 |     1211.1 |      1183.0 |      6916.0 |
+PrStoreUTHit                           INFO Number of counters : 1
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "#banks"                                        |       826 |     148680 |     180.00 |
+PrTrackAssociator                      INFO Number of counters : 2
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ |*"Efficiency"                                    |       163 |         95 |( 58.28221 +- 3.862201)% |
+ | "MC particles per track"                        |        95 |         95 |     1.0000 |
+VPClus                                 INFO Number of counters : 1
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "Nb of Produced Clusters"                       |       826 |    1766324 |     2138.4 |
+fromPrDownstreamTracksV1Tracks         INFO Number of counters : 1
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "Nb of converted Tracks"                        |       826 |        163 |    0.19734 |
+fromPrSeedingTracksV1Tracks            INFO Number of counters : 1
+ |    Counter                                      |     #     |    sum     | mean/eff^* | rms/err^*  |     min     |     max     |
+ | "Nb of converted Tracks"                        |       826 |     106585 |     129.04 |
+ApplicationMgr                         INFO Application Manager Stopped successfully
+DownstreamTrackChecker                 INFO Results
+DownstreamTrackChecker                 INFO **** Downstream                       163 tracks including             68 ghosts [41.72 %], Event average  7.45 % ****
+DownstreamTrackChecker                 INFO   01_UT+T                       :      75 from    64992 [  0.12 %]      0 clones [ 0.00 %], purity: 99.43 %, hitEff: 99.13 %
+DownstreamTrackChecker                 INFO   02_UT+T_P>5GeV                :      29 from    40330 [  0.07 %]      0 clones [ 0.00 %], purity: 99.24 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   03_UT+T_strange               :      32 from     7564 [  0.42 %]      0 clones [ 0.00 %], purity: 99.79 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   04_UT+T_strange_P>5GeV        :      19 from     3999 [  0.48 %]      0 clones [ 0.00 %], purity: 99.65 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   05_noVelo+UT+T_strange        :      32 from     4158 [  0.77 %]      0 clones [ 0.00 %], purity: 99.79 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   06_noVelo+UT+T_strange_P>5GeV :      19 from     2378 [  0.80 %]      0 clones [ 0.00 %], purity: 99.65 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   07_UT+T_fromDB                :      10 from     2835 [  0.35 %]      0 clones [ 0.00 %], purity: 99.33 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   08_UT+T_fromBD_P>5GeV         :      10 from     1906 [  0.52 %]      0 clones [ 0.00 %], purity: 99.33 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   09_noVelo+UT+T_fromBD         :      10 from      951 [  1.05 %]      0 clones [ 0.00 %], purity: 99.33 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   10_noVelo+UT+T_fromBD_P>5GeV  :      10 from      656 [  1.52 %]      0 clones [ 0.00 %], purity: 99.33 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   11_UT+T_SfromDB               :      10 from     1051 [  0.95 %]      0 clones [ 0.00 %], purity: 99.33 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   12_UT+T_SfromDB_P>5GeV        :      10 from      779 [  1.28 %]      0 clones [ 0.00 %], purity: 99.33 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   13_noVelo+UT+T_SfromDB        :      10 from      780 [  1.28 %]      0 clones [ 0.00 %], purity: 99.33 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO   14_noVelo+UT+T_SfromDB_P>5GeV :      10 from      594 [  1.68 %]      0 clones [ 0.00 %], purity: 99.33 %, hitEff:100.00 %
+DownstreamTrackChecker                 INFO 
+HLTControlFlowMgr                      INFO Memory pool: used 2.02196 +/- 0.0292988 MiB (min: 0, max: 2) in 1 +/- 0 blocks (allocated >once in 0 +/- 0% events). Allocated capacity was 10 +/- 0 MiB (min: 10, max: 10) and 30.374 +/- 0.528439 (min: 4, max: 68) requests were served
+HLTControlFlowMgr                      INFO Timing table:
+HLTControlFlowMgr                      INFO 
+ | Name of Algorithm                               | Execution Count | Total Time / s  | Avg. Time / us   |
+ | Sum of all Algorithms                           |            1000 |         148.632 |       148631.749 |
+ | "Gaudi__Hive__FetchDataFromFile#1"              |            1000 |         102.194 |       102194.325 |
+ | "PrLongLivedTracking"                           |             826 |          27.848 |        33714.299 |
+ | "DownstreamTrackChecker"                        |             826 |           8.217 |         9947.546 |
+ | "PrHybridSeeding"                               |             826 |           2.907 |         3518.899 |
+ | "UnpackMCParticles"                             |             826 |           2.046 |         2476.516 |
+ | "MCVerticesUnpacker"                            |             826 |           1.942 |         2351.356 |
+ | "PrLHCbID2MCParticle"                           |             826 |           1.608 |         1947.055 |
+ | "VPClusFull"                                    |             826 |           0.478 |          579.122 |
+ | "VPFullCluster2MCParticleLinker"                |             826 |           0.433 |          524.184 |
+ | "VPClus"                                        |             826 |           0.194 |          234.750 |
+ | "PrStoreSciFiHits"                              |             826 |           0.133 |          160.812 |
+ | "fromPrSeedingTracksV1Tracks"                   |             826 |           0.125 |          151.591 |
+ | "PrStoreUTHit"                                  |             826 |           0.121 |          146.693 |
+ | "PrStorePrUTHits"                               |             826 |           0.107 |          129.034 |
+ | "PrStoreFTHit"                                  |             826 |           0.083 |          101.068 |
+ | "FTRawBankDecoder"                              |             826 |           0.046 |           55.130 |
+ | "reserveIOV"                                    |             826 |           0.035 |           41.805 |
+ | "PrTrackRecoDumper"                             |             826 |           0.031 |           37.433 |
+ | "LHCb__UnpackRawEvent#1"                        |            1000 |           0.017 |           16.557 |
+ | "createODIN"                                    |             826 |           0.007 |            9.023 |
+ | "PrTrackAssociator"                             |             826 |           0.007 |            8.392 |
+ | "PrGECFilter"                                   |            1000 |           0.006 |            6.430 |
+ | "fromPrDownstreamTracksV1Tracks"                |             826 |           0.006 |            6.980 |
+ | "LHCb__UnpackRawEvent#3"                        |             826 |           0.006 |            6.687 |
+ | "Gaudi__Hive__FetchDataFromFile#2"              |             826 |           0.005 |            5.668 |
+ | "LHCb__UnpackRawEvent#2"                        |            1000 |           0.004 |            3.927 |
+ | "DummyEventTime"                                |             826 |           0.004 |            4.742 |
+ | "Gaudi__Hive__FetchDataFromFile#3"              |             826 |           0.004 |            4.686 |
+ | "Gaudi__Hive__FetchDataFromFile#21"             |             826 |           0.004 |            4.661 |
+ | "Gaudi__Hive__FetchDataFromFile"                |             826 |           0.004 |            4.268 |
+ | "Gaudi__Hive__FetchDataFromFile#20"             |             826 |           0.003 |            4.219 |
+ | "Gaudi__Hive__FetchDataFromFile#18"             |             826 |           0.003 |            4.098 |
+ | "Gaudi__Hive__FetchDataFromFile#19"             |             826 |           0.003 |            4.011 |
+ | "Gaudi__Hive__FetchDataFromFile#14"             |             826 |           0.002 |            2.334 |
+
+HLTControlFlowMgr                      INFO StateTree: CFNode   #executed  #passed
+LAZY_AND: upgradeFunction_decision       #=1000    Sum=826         Eff=|( 82.60000 +- 1.19885 )%|
+ PrGECFilter/PrGECFilter                 #=1000    Sum=826         Eff=|( 82.60000 +- 1.19885 )%|
+ NONLAZY_OR: upgradeFunction_data        #=826     Sum=826         Eff=|( 100.0000 +- 0.00000 )%|
+  PrTrackChecker/DownstreamTrackChecker  #=826     Sum=826         Eff=|( 100.0000 +- 0.00000 )%|
+  PrTrackRecoDumper/PrTrackRecoDumper    #=826     Sum=826         Eff=|( 100.0000 +- 0.00000 )%|
+
+HLTControlFlowMgr                      INFO Histograms converted successfully according to request.
+ToolSvc                                INFO Removing all tools created by ToolSvc
+DownstreamTrackChecker.PrChecker... SUCCESS Booked 598 Histogram(s) : 1D=425 2D=173 
+RootCnvSvc                             INFO Disconnected data IO:186208EC-3664-EA11-BAF0-FA163E8E31BD [root://eoslhcb.cern.ch//eos/lhcb/grid/prod/lhcb/MC/Upgrade/XDST/00104521/0000/00104521_00000021_2.xdst]
+ApplicationMgr                         INFO Application Manager Finalized successfully
+ApplicationMgr                         INFO Application Manager Terminated successfully

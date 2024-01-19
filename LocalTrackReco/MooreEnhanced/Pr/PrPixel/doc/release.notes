@@ -1,0 +1,266 @@
+!-----------------------------------------------------------------------------
+! Package     : Pr/PrPixel
+! Responsible : Heinrich Schindler
+! Purpose     : Pattern recognition for the Pixel detector of the upgraded LHCb
+!-----------------------------------------------------------------------------
+
+!========================= PrPixel v1r14 2016-03-17 =========================
+! 2016-03-12 - Heinrich Schindler
+ - Follow change in DeVP (r202920).
+
+!========================= PrPixel v1r13p1 2015-10-13 =========================
+! 2015-08-12 - Gerhard Raven
+ - remove #include of obsolete Gaudi headers
+
+!========================= PrPixel v1r13 2015-08-05 =========================
+! 2015-08-03 - Manuel Tobias Schiller
+ - patch to PrPixelTrack on behalf of Daniel Cámpora <danielcampora@gmail.com>:
+   I added some vectorization code at some point, which broke when the hits
+   were changed to store wx and wy instead of wx^2 and wy^2 in the error
+   values of the hits. The vectorized code was relying on x,y,z,wx stored
+   consecutively in memory, but assumed wx to be wx^2.
+   Here is a fix for that then, preserving wx and wy in whatever form they
+   may be, and accessing their values by the method wx() and wy().
+
+!========================= PrPixel v1r12 2015-07-20 =========================
+! 2015-06-24 - Heinrich Schindler
+ - Inherit PrPixelHitManager from Decoder::ToolBase.
+
+!========================= PrPixel v1r11 2015-05-26 =========================
+! 2015-04-22 - Heinrich Schindler
+ - Remove support for obsolete, lite-cluster based raw banks.
+ - Sort hits on a track only once.
+ - Remove unused functions and include statements.
+ - Use constants defined in Kernel/VPConstants.h, remove redundant definitions
+   from PrPixelUtils.h
+
+!========================= PrPixel v1r10 2014-10-14 =========================
+! 2014-09-22 - Manuel Tobias Schiller
+ - changed PrPixelHit class to save 1/error instead of 1/error^2 - exploiting
+   hit-level parallelism in chi^2 fits becomes easier this way; for now,
+   client code should run without modification (and without change in
+   performance)
+
+!========================= PrPixel v1r9 2014-09-08 =========================
+! 2014-07-23 - Daniel Hugo Campora Perez
+ - Type conversion carried over most of the code from double to single
+   floating point precision.
+ - PrPixelTrack fit and covariance functions coded in SSE / SSE2 intrinsics.
+
+!========================= PrPixel v1r8 2014-07-14 =========================
+! 2014-06-30 - Heinrich Schindler
+ - Move bulk of debugging histograms from PrPixelTracking to new algorithm 
+   PrPixelMonitor.
+
+! 2014-06-16 - Heinrich Schindler
+ - Stop search for pairs two stations earlier.
+ - PrPixelTrack: remove unused member m_backward and functions first/lastModule.
+ - Don't recompute straight-line fit parameters progressively for each new hit,
+   but only when requested explicitly (PrPixelTrack::fit).
+ - Use auto iterators.
+ 
+!========================= PrPixel v1r7 2014-05-13 =========================
+! 2014-05-08 - Heinrich Schindler
+ - Remove unused functions removeHit, all3SensorsAreDifferent from PrPixelTrack
+
+! 2014-05-04 - Heinrich Schindler
+ - Remove forgotten m_useSlopeCorrection member in PrPixelHitManager
+ - clang-format
+
+! 2014-04-30 - Heinrich Schindler
+ - Remove slope correction option (to be reimplemented in VPDet or cluster 
+   position tool after retuning for binary readout)
+
+! 2014-04-26 - Heinrich Schindler
+ - Replace Tf/PatKernel by Pr/PrKernel in CMakeLists.txt and cmt/requirements
+
+! 2014-04-25 - Heinrich Schindler
+ - Follow changes in VPChannelID format (r171869).
+ - Use IPrDebugTool instead of IPatDebugTool.
+
+! 2014-04-17 - Heinrich Schindler
+ - Change condition for rebuilding geometry (following r171666).
+
+! 2014-04-07 - Kurt Rinnert
+ - change default to unlimited cluster size when running on Super Pixel raw
+   banks. This is to avoid changes in results when we switch over. Cuts will
+   help, but this needs a detailed study before deployment.
+ - help the compiler with out of order execution and constness in various places.
+ - avoid calling into sqrt() in hot PrPixelTracking::bestHit() method. 
+
+! 2014-04-06 - Kurt Rinnert
+ - avoid mixing double and float (this is very expensive!).
+ - cache global x of first hit on a module.
+
+! 2014-04-05 - Heinrich Schindler
+ - Change default value of RunOnRawBanks to True.
+
+! 2014-04-04 - Kurt Rinnert
+ - Assign proper keys when inserting clusters in container.
+
+! 2014-04-01 - Heinrich Schindler
+ - Pickup VPClusters instead of VPLiteClusters.
+
+! 2014-03-31 - Heinrich Schindler
+ - Follow changes in VPCluster format (revision r170715)
+
+!========================= PrPixel v1r6 2014-03-18 =========================
+! 2014-03-14 - Kurt Rinnert
+ - named cluster storing algorithm more aptly.
+
+! 2014-03-13 - Kurt Rinnert
+ - Store 3D point information when creating VPClusters.
+
+! 2014-03-13 - Heinrich Schindler
+ - Follow changes in VPCluster format and path (revision r169999).
+
+! 2014-03-12 - Kurt Rinnert
+ - improved documentation and clean up of new code.
+ - prepared for upcoming new event model and cluster storage after track
+   finding (clustering without pattern recognition will work transparently for
+   fast monitoring purposes).
+ - introduced runtime switch for trigger or offline configuration. The pattern
+   recognition results are the same in both cases, but the clusters put on
+   the TES will potentially be different, depending on the maximum cluster
+   size passed to the track finding algorithm.
+ - the default code path is still the same old thing based on a lite cluster
+   raw bank, but should become obsolete soon. Even then old MC will still work
+   transparently, including MC matching, although you can't expect bit-perfect
+   results.
+
+! 2014-03-10 - Kurt Rinnert
+ - added code to run the tracking directly from raw banks. This is completely
+   transparent; the bank version determines how the bank is interpreted. This
+   code branch is not active by default yet, so no change in the results for
+   now.
+ - some clean up of recently addded code.
+
+! 2014-03-04 - Kurt Rinnert
+ - bug fix in PrPixelHitManager: the size of of clusters in super pixel
+   patterns was off by one (legacy debugging code).
+ - bug fix in PrPixelClustering: matched super pixel clusters sometimes
+   received the wrong sensor column number (wrong grouping of integer
+   divisions).
+ - simplified generic clustering code in PrPixelClustering: the latest attempt
+   at agressive row scan optimization didn't do any good and obfuscated the
+   code; it has been reverted to a more generic approach.
+ - none of these changes affect code running in the current Brunel branches;
+   they have no effect on the results (until activated).
+
+! 2014-02-28 - Kurt Rinnert
+ - fixed bug in PrPixelHitManager::buildHits(): the sensor pixel column was
+   computed wrongly due to writing SENSOR_COLUMNS were it should have been
+   CHIP_COLUMNS. This is what caused the garbage VP tracking results in the
+   last nightly build.
+ - re-instantiated chi^2 rejection fix that was accidentally globbered by the
+   last commit.
+
+! 2014-02-28 - Marco Cattaneo
+ - Fixed CMake configuration.
+
+! 2014-02-27 - Kurt Rinnert
+ - use new features of DeVPSensor to speed up 3D point building.
+ - additional various optimizations (cache global transforms, PrPixelModule 
+   object pool ...).
+ - added possibility to do clustering and 3D hit building directly from
+   super pixel raw banks.
+ - added clustering algorithm creatinf VPLiteClusters from super pixel raw
+   bank.
+
+!========================= PrPixel v1r5 2014-02-19 =========================
+! 2014-02-13 - Heinrich Schindler
+ - Renamed PatPixel* to PrPixel*
+ - Bugfix (chi2 cut on short tracks was not applied)
+ - Remove unused functions from PrPixelTracking
+
+! 2014-02-09 - Heinrich Schindler
+ - Moved package from Tf/PatPixel to Pr/PrPixel
+
+! 2014-01-09 - Tim Head
+ - Restructered code in hottest part of PatPixelTracking
+
+   Precompute the answer to common lookups like
+   whether a module has any hits or the value
+   of the largest X hit.
+
+!========================= PatPixel v1r4 2013-12-10 =========================
+! 2013-12-05 - Heinrich Schindler
+ - Removed unused variables, changed default values
+
+!========================= PatPixel v1r3 2013-10-24 =========================
+! 2013-10-23 - Heinrich Schindler
+ - Changed default value of UseSlopeCorrection to False
+
+!========================= PatPixel v1r2 2013-10-01 =========================
+! 2013-09-27 - Heinrich Schindler
+ - Renamed PatPixelSensor to PatPixelModule to reflect new geometry
+ - Added flag to use slope dependent correction in position calculation or not
+ - Some cleanup in PatPixelTracking 
+
+! 2013-09-25 - Heinrich Schindler
+ - Modifications for use with new XML and detector element hierarchy
+ - Moved track extrapolation to PatPixelTracking
+ - Temporarily removed trackUpstream method
+ - Moved position calculation to PatPixelHitManager 
+ - Removed printf statements from helper classes
+ 
+! 2013-09-18 - Marco Cattaneo
+ - Fix uninitialised counter in PatPixelHitManager.h
+
+! 2013-0-17 - Tim Evans
+ - Removed some obsolete code / commented out PatPixelSensor code that is not used
+ - Changed Maximum scattering parameter to a GaudiParameter (MaxScattering)
+
+! 2013-09-09 - Heinrich Schindler
+ - Follow VP detector element and channel ID changes (r162190, 162191)
+ - Fix unused variable warning from previous commit
+
+! 2013-09-03 - Pawel Jalocha
+ - tracks fit on multiple scattering model, instead of a straight line,
+   improves hit efficiency (and IP resolution as a result)
+ - code not very clean and not final: more a test of the new concept
+
+! 2013-08-25 - Heinrich Schindler
+ - Replace direct calls to DeVPSquareType 
+
+!========================= PatPixel v1r1 2013-06-03 =========================
+! 2013-05-28 - Wouter Hulsbergen
+ - implemented a simple fixed-noise kalman filter to improve IP resolution
+
+! 2013-05-24 - Marco Cattaneo
+ - Include missing PatKernel dependency
+
+!========================= PatPixel v1r0 2013-02-14 =========================
+! 2013-02-08 - Diego Martinez Santos
+ - Added correction to the bias in cluster positions, as well as a slope
+   dependent correction for two pixel clusters. 
+   This might cause for the moment a loss of speed.
+
+! 2013-02-08 - Marco Clemencic
+ - Fixed compilation with CMake.
+
+! 2013-02-01 - Sascha Stahl
+ - Added CMake file
+
+! 2013-01-30 - Olivier Callot
+ - Add option "ClearHits" to clear the hits, for rerunning the VP pattern twice.
+
+! 2012-12-09 - Pawel Jalocha
+ - debug histograms added (activate with DEBUG_HISTO)
+ - added comments, as I understand the code works
+
+! 2012-01-17 - Olivier Callot
+ - Re-implementation of the algorithm, based on finding a pair of consecutive hits
+   and extrapolating in both directions.
+   Tested on 900 events: 0.9% ghosts, 99.7% efficient, 0.5% clones, 1.35 ms/event
+   Improvements are possible, but a better clustering is probably the most 
+   important one
+
+! 2012-01-10 - Olivier Callot
+ - First version. The overall structure is taken form FastVelo.
+   New logic to make the search: Find enough hits in a seed region before 
+   extrapolating. This seed region can extend acroos the half detector boundary.
+
+   Initial performance is great:  <2% ghosts, >99.5% efficiency for long > 5 GeV,
+                                  <0.5% clones, and only < 1.5 ms per event. 
+      This is obtained on a limited sample.

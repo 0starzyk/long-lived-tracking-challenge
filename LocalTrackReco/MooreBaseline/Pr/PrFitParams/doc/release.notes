@@ -1,0 +1,46 @@
+!-----------------------------------------------------------------------------
+! Package     : Pr/PrFitParams
+! Responsible : Olivier Callot
+! Purpose     : Fit parameters for the pattern
+!-----------------------------------------------------------------------------
+
+!========================= PrFitParams v2r0p1 2015-10-13 =========================
+! 2015-08-12 - Gerhard Raven
+ - remove #include of obsolete Gaudi headers
+
+!========================= PrFitParams v2r0 2014-02-19 =========================
+! 2014-01-13 - Marco Cattaneo
+ - Remove VL support
+
+!========================= PrFitParams v1r3 2013-07-18 =========================
+! 2013-07-03 - Michel De Cian
+ - Fix (maybe) uninitialised variable in PrFitFwdParams
+
+!========================= PrFitParams v1r2 2013-06-03 =========================
+! 2013-05-27 - Marco Cattaneo
+ - Fix uninitialised variable (seen by both clang32 and Coverity)
+ - Fix UNINIT_CTOR defects
+
+!========================= PrFitParams v1r1 2013-03-22 =========================
+! 2013-03-11 - Marco Clemencic
+ - Fixed compilation with C++11.
+ 
+! 2013-02-26 - Marco Cattaneo
+ - Fix gcc -pedentic warnings
+
+!========================= PrFitParams v1r0 2013-02-15 =========================
+! 2013-02-15 - Marco Clemencic
+ - Added CMakeLists.txt.
+
+! 2013-02-15 Yasmine Amhis 
+  - Remove warning in PrFwdFitParams
+
+! 2013-02-07   Yasmine Amhis 
+  - Adapt  PrFwdFitParams, PrFitSeedParams, PrFitKsParams to work with 
+    upgrade geometry 
+
+! 2012-11-21 - Olivier Callot
+ - Fix the PrFwdFitParams to produce proper input fo rthe next iteration.
+
+! 2012-11-05 - Olivier Callot
+ - First version, based on Tf/PatFitParams.

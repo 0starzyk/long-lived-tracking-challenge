@@ -1,0 +1,378 @@
+!-----------------------------------------------------------------------------
+! Package     : Pat/PatPV
+! Responsible : Mariusz Witek
+! Purpose     : Compute primary vertices
+!-----------------------------------------------------------------------------
+
+!========================= PatPV v3r31 2016-03-17 =========================
+! 2016-03-08 - Agnieszka Dziurda 
+ - add two new options to PVOfllineTool which allow to set double radial treshold.
+   -- BeamSpotRHighMultiplicityCut - relaxed cut for PV with many associated tracks
+   -- BeamSpotRMultiplicityTreshold - multiplicity treshold to switch 
+         between tight and relaxed cut. 
+
+!========================= PatPV v3r30 2016-01-28 =========================
+! 2016-01-21 - Marco Cattaneo
+ - Add missing override qualifiers and remove an unused variable, to silence
+   clang warnings
+
+! 2016-01-01 - Gerhard Raven
+ - fix  PVOfflineTool::initialize: invoke base class initialize 
+   (exposed after fixing 'the same' problem in finalize by removing finalize...)
+ - use boost::optional instead of a bool return value and out parameter
+
+! 2015-12-30 - Gerhard Raven
+ - major: update IPVSeeding interface to return by value, take const
+   arguments and be const
+ - explicitly invoke callbacks so that even if property is never
+   updated the dependency gets synchronized
+ - prefer STL algorithms over raw loops
+ - replace member functions that do not interact with their
+   class by standalone functions in an anonymous namespace
+ - add more const
+ - replace cache vecpm data member with in-situ cache
+
+! 2015-12-29 - Gerhard Raven
+ - prefer extends, extend_interfaces
+ - qualify implementations of virtual functions as 'override'
+ - add const where possible
+ - add final to internal data classes
+ - prefer returning double by value instead of const&
+ - add callbacks for items which depend on properties
+ - prefer emplace_back over push_back
+ - move member functions which do not acces member data
+   into standalone functions in anonymous namespace
+ - remove deprecated property
+ - prefer STL algorithms over raw loops
+ - prefer range-based for loops
+ - improver overlap check by using that LHCbID are ordered
+ - prefer return-by-value over OUT argument
+
+! 2015-12-28 - Gerhard Raven
+ - fix const correctness
+
+! 2015-12-08 - Marco Cattaneo
+ - Fix unused member variable
+ - Remove unnecessary includes
+
+!========================= PatPV v3r29 2015-11-23 =========================
+! 2015-11-03 - Wouter Hulsbergen
+ - Added AdaptivePV3DFitter
+ - Added option to PatPV3D to write also new PV list
+
+!========================= PatPV v3r28p1 2015-10-13 =========================
+! 2015-08-12 - Gerhard Raven
+ - remove #include of obsolete Gaudi headers
+
+!========================= PatPV v3r28 2015-04-21 =========================
+! 2015-04-16 - Chris Jones
+ - Add back the property maxIP2PV to LSAdaptPV3DFitter as its removal broke
+   the Stripping tests in the nightlies. Add a deprication warning incase
+   it is set to this time allow for a proper depreciation period before 
+   removing it again in the future...
+
+!========================= PatPV v3r27 2015-03-31 =========================
+
+! 2015-03-31 - Roel Aaij
+ - Remove obsolete property.
+
+! 2015-03-26 - Roel Aaij
+ - Remove left-over possibility to apply R-cut in LSAdaptPV3DFitter
+ - Add bound on Velo distance to beam, above which the beam-spot R cut is not
+   applied. Once the BeamSpotRho functor is available in Rec, use that
+   instead.
+
+! 2015-03-16 - Agnieszka Dziurda
+ - add new functionality to LSAdaptPV3DFitter which 
+ -- allow to use kalman fitter tracks, option UseFittedTracks
+ -- add option for radial distance cut of PV - maxRDPV 
+ -- to make offline and online algorithms consistent: 
+        remove maxIP2PV cut, instead trackMaxChi2 is recommended
+
+
+!========================= PatPV v3r26p1 2013-04-30 =========================
+! 2013-04-09 - Marco Cattaneo
+ - Add __init__.py to please CMake
+
+!========================= PatPV v3r26 2013-02-14 =========================
+! 2013-02-04 - Mariusz Witek
+ - change void to StatusCode for removeTracksAndRecalculatePV (in PVOfflineTool)
+   to give the information that PV recalculation failed and original PV is returned.
+   Associated modification has been made in Tr/TrackInterfaces (IPVOfflineTool).
+
+!========================= PatPV v3r25 2012-11-28 =========================
+! 2012-11-23 - Marco Clemencic
+ - Added CMake configuration file.
+
+!========================= PatPV v3r24 2012-07-24 =========================
+! 2012-07-19 - Mariusz Witek
+ - technical modification to gain a few % of speed in LSAdaptPV3DFitter.
+ - downgrade warning to debug when hessian inversion fails 
+   in LSAdaptPV3DFitter.   
+
+! 2012-07-13 - Mariusz Witek
+ - return StatusCode from PVOfflineRecalculate->RecalculateVertex to allow
+   users to decide what to do in case of failure.
+
+! 2012-07-13 - Mariusz Witek
+ - modification suggested by Pieter David to make PVSeed3DTool faster
+   The whole 3D PV reconstruction time (seed+fit) reduced by 35 %
+
+!========================= PatPV v3r23 2012-03-27 =========================
+! 2012-03-08 - Marco Cattaneo
+ - Replace std::sort by std::stable_sort to fix diffs between gcc43 and gcc46
+ - Fic UNINIT_CTOR Coverity defects
+
+! 2012-03-07 - Marco Cattaneo
+ - Fix unprotected debug() and verbose()
+ - Fix trivial icc remarks
+ - Replace endreq by endmsg
+
+!========================= PatPV v3r22 2012-02-28 =========================
+! 2012-02-26 - Mariusz Witek
+ - Remove usage of WeigthsVector from PatPV
+ - Make LSAdaptPV3DFitter faster (for HLT)
+
+! 2012-02-20 - Chris Jones
+ - Update PatPVOffline to no longer create a seperate 'WeightsVector', but 
+   instead to store the track weights directly in the RecVertex class, which 
+   now supports this.
+ - Update PVOfflineRecalculate to take the track weights direct from the PV
+   itself, instead of trying to load the now obsolete weights vector.
+
+!========================= PatPV v3r21 2012-01-31 =========================
+! 2011-11-23 - Mariusz Witek
+ - introduce beamspot constraint into PVSeedTool to make PatPV3D faster which
+   gives :-
+  - a factor between 2 or 3 in exe time when switching from 3D PVSeed3DTool 
+    to PVSeedTool
+  - lower false PV rate and lower PV->SV mistakes
+  - same performance for other parameters like resolution and PV efficiency
+
+!========================= PatPV v3r20 2011-08-31 =========================
+! 2011-08-29 - Mariusz Witek
+- add standard PV configuration class to PVConf: StandardPV to activate beam spot radial cut
+  for reprocessing.
+
+! 2011-08-28 - Mariusz Witek
+- add PV to beamspot radial cut to be activated on demand. Default is no cut as before.
+  The radial cut protects high multiplicity SV of B from being reconstructed as PV (and lost)
+  see https://indico.cern.ch/conferenceDisplay.py?confId=134893 (PV definition modification)
+
+!========================= PatPV v3r19 2010-10-30 =========================
+! 2010-10-29 - Mariusz Witek
+- remove access to tracks of PV to be recalculated in PVOfflineRecalculate.
+  They are not stored on uDST 
+
+! 2010-10-24 - Mariusz Witek
+- change of argument type to const in removeTracksAndRecalculatePV of IPVOfflineTool interface
+
+! 2010-10-20 - Mariusz Witek
+- supress final printout of statistics in PVOfflineRecalculate 
+  if tool instantiated but not used
+
+! 2010-10-18 - Mariusz Witek
+- new tool to remove tracks from PV and recalculate PV params without a fit
+
+!========================= PatPV v3r18 2010-09-27 =========================
+! 2010-09-24 - Mariusz Witek
+- include track weights in vertex chi2 calculation
+
+! 2010-09-22 - Mariusz Witek
+- store float weights instead of double
+
+! 2010-09-20 - Mariusz Witek
+- lots of modifications to store track weights
+- removal of obsolete PV algorithms and fitting tools
+
+! 2010-09-20 - Mariusz Witek
+- fix PVConf problem after removal of zMaxSpread parameter from LSAdaptPVFitter
+
+! 2010-09-15 - Mariusz Witek
+- Removed obsolete cut of collecting tracks for PV fit in LSAdaptPVFitter
+
+!============================= PatPV v3r17 2010-08-25 ======================
+! 2010-08-23 - Mariusz Witek
+ - Number of improvements for high mu data
+ - See http://indico.cern.ch/conferenceDisplay.py?confId=99584
+
+!============================= PatPV v3r16 2010-05-21 ======================
+! 2010-05-21 - Mariusz Witek
+ - Tuning of LSAdaptPV3DFitter for HLT
+
+! 2010-05-21 - Rob Lambert
+ - Removed obsolete options files PVLoose and PVVeryLoose
+
+! 2010-05-13 - Rob Lambert
+ - Review of warnings
+ - Fixed timebomb in PVOfflineTool.cpp
+
+! 2010-05-05 - Rob Lambert
+ - bugfix, added one too many "self" in PVConf
+
+! 2010-05-03 - Rob Lambert
+ - Added PVConf.py, to replace PVLoose.py and PVVeryLoose.py options
+
+!============================= PatPV v3r15 2010-04-18 ======================
+! 2010-04-17 - Gerhard Raven
+ - PatPV2DFit3D:
+   o in transform mentioned below, pick up the phi from the track
+   o other small cosmetic changes
+
+
+! 2010-04-16 - Piotr Morawski
+ - new method of transforming tracks to global coordinate system in PatPV2DFit3D
+
+!============================= PatPV v3r14 2010-03-19 ======================
+! 2010-03-11 - Mariusz Witek
+ - fix Initialize/Finalize misbalance in PVSeed3DOfflineTool
+
+! 2010-03-06 - Stephanie Hansmann-Menzemer
+ - fix in PVVeryLoose.py
+
+! 2010-03-05 - Piotr Morawski
+ - corrected error in PVVerryLoose.py and warning in PVSeed3DOfflineTool
+
+! 2010-03-04 - Piotr Morawski
+ - modified LSAdaptPVFitter so it could be used insead of SimplePVFitter
+ - added PVSeed3DOfflineTool
+ - added timer in PatPV2DFit3D
+ - changed fitter and seeding in PVVeryLoose.py
+
+!============================= PatPV v3r13 2010-02-15 ======================
+! 2010-02-13 - Stephanie Hansmann-Menzemer
+ - add PatPVVeryLoose options
+
+! 2010-02-11 - Gerhard Raven
+ - make sure that PatPV3D sets filterPassed to false if vertex fit fails
+   in order to protect downstream code from empty containers...
+
+! 2010-02-09 - Piotr Morawski
+ - modified PVOfflineTools to reconstruct displaced vertices
+ - PVDisplaced.py - options to run displaced vertices reconstruction
+
+!============================= PatPV v3r12 2010-01-21 ======================
+! 2010-01-27 - Rob Lambert
+ - Compilation problem on windows with static double.
+	 . changed to member variable
+
+! 2010-01-20 - Rob Lambert
+ - Fixed problem in PVUtils which was causing a FPE in the nightlies
+	 Savannah bug #61282
+ - Required creation of default constructors in classes
+ - Some additional /0 problems now protected, and all member variables
+   initialized explicitly throughout this package.
+
+!============================= PatPV v3r11p2 2010-01-14 ======================
+
+! 2010-01-11 - Mariusz Witek
+ - make PatPV2DFit3D as GaudiHistoAlg and add histograms for PV monitoring
+
+! 2009-12-22 - Gerhard Raven
+ - remove unused reference to DeVelo
+
+! 2009-12-18 - Gerhard Raven
+ - register for updates of Velo position in PatPV2DFit3D
+
+!============================= PatPV v3r11p1 2009-12-16 ======================
+
+! 2009-12-16 - Mariusz Witek
+ - modifications to reconstruct loose PV without requirement of VELO segment
+ - added SimplePVFitter and SimplePVSeedTool
+ - modified PVOfflineTool 
+ - saveguard for MinTracks in PV for LSAdaptFitter 
+ - modified PVLoose.py options for Collision09
+
+! 2009-12-14 - Marco Cattaneo
+ - Fix untested StatusCode in LSAdaptPVFitter.cpp
+
+!============================= PatPV v3r11 2009-12-11 =========================
+! 2009-12-10 - Stephanie Hansmann-Menzemer
+  - change debug output level accidently slipped into PVLoose.py
+
+! 2009-12-08 - Mariusz Witek
+ - PVLoose.py - options to run PV reconstruction with relaxed cuts
+
+!============================= PatPV v3r10 2009-12-03 =========================
+! 2009-12-03 - Piotr Morawski
+ - optimized execution time of PatPV2DFit3D and LSAdaptPV3DFitter
+ - bug fix in PatPV2DFit3D (wrong pointers of tracks were filled into vertex)
+
+!============================= PatPV v3r9 2009-11-13 =========================
+! 2009-11-11 - Patrick Koppenburg
+ - Remove _dll file
+ - v3r9
+
+! 2009-11-11 - Mariusz Witek
+  - add PatPV2DFit3D, new algorithm to fir PV 2D with quasi-3D tracks
+    timing still to be optimized. Roughly 4 times slower than PatPV2D.
+
+!============================= PatPV v3r8 2009-01-12 =========================
+! 2008-12-17 - Marco Cattaneo
+ - Fix gcc 4.3 warning
+
+! 2008-12-06 - Mariusz Witek
+  - Improved efficiency of PatPV2D for multi PV events. Only 10% increase of exe time.
+  - Small modifications to degrade not critical warnings and errors comming from PV fit.
+
+!============================= PatPV v3r7 2008-11-21 =========================
+! 2008-11-17 - Mariusz Witek
+  - improvements for reconstruction of close primary vertices in multi PV events
+  See http://indico.cern.ch/conferenceDisplay.py?confId=33059 
+
+!============================= PatPV v3r6 2008-09-05 =========================
+! 2008-08-28 - Mariusz Witek
+  - improvements for reconstruction of low multiplicity PVs and bad quality
+    tracks. Triggered by options. Deafult performance not changed.   
+
+!============================= PatPV v3r5 2008-07-17 =========================
+! 2008-07-11 - Mariusz Witek
+  - removal of cout and option correction 
+
+!============================= PatPV v3r4 2008-07-02 =========================
+! 2008-06-17 - Patrick Koppenburg
+ - Removed unnecessary unchecked StatusCode.
+
+! 2008-06-12 - Mariusz Witek
+  - adjusted default options for LSAdaptPV3DFitter 
+  - added example options for displaced vertices
+
+! 2008-06-11 - Mariusz Witek
+  - new functionality and package structure change: 
+  - PV off-axis reconstruction 
+  - Seeding interface introduced IPVSeeding.h
+  - PVSeed3DTool.cpp - new (second) seeding for off-axis PVs 
+  - LSAdaptPV3DFitter - new PV fitting algorithm for PatPV3D
+  - PatPV3D - new algorithm. Uses PVOfflineTool
+  See <a href="http://indico.cern.ch/materialDisplay.py?contribId=46&sessionId=20&materialId=slides&confId=33862">presentation</a> at tracking and alignment workshop, 2008-06-11
+
+!============================= PatPV v3r3 2008-06-04 =========================
+! 2008-06-04 - Marco Cattaneo
+ - Fixed warning message
+
+! 2008-06-02 - Mariusz Witek
+  - removed setting of Invalid flag for 2D tracks 
+
+!============================= PatPV v3r2 2008-02-22 =========================
+! 2008-02-21 - Mariusz Witek
+  - added missing setTechnique(LHCb::RecVertex::Primary) in PatPV2D and PatPV3D
+
+!============================= PatPV v3r1 2007-12-14 =========================
+! 2007-12-14 - Mariusz Witek
+  - Additional correction of PatPV3D for Tf framework
+
+! 2007-12-04 - Mariusz Witek
+  - Corrected problem with track extrapolation in LSAdaptPVFitter
+
+! 2007-12-04 - Mariusz Witek
+  - Correction for unchecked StatusCode
+
+! 2007-12-04 - Mariusz Witek
+  - major modification of the structure and some improvements
+  - split PatPVOffline into Alg and Tool (PVOfflineTool)
+  - put interafce IPVOfflineTool into Tr/TrackInterfaces
+  - add new LSAdaptPVFitter; rename old PVFitter to LSIterPVFitter
+
+!============================= PatPV v3r0 2007-10-12 =========================
+! 2007-10-09 - Stephanie Hansmann-Menzemer
+  - import code from Pat/PatPV, for older release notes check there

@@ -1,0 +1,853 @@
+!----------------------------------------------------------------------------
+! Package     : Tr/TrackFitter
+! Responsible : Wouter Hulsbergen
+!----------------------------------------------------------------------------
+
+! 2016-05-23 - Rosen Matev
+ - Remove info messages from TrackMasterFitter
+
+!========================= TrackFitter v5r8 2016-03-17 =========================
+! 2016-03-04 - Sascha Stahl
+ - TrackMasterFitter: Implement property MaxUpdateTransports to restrict maximum
+   number of transport updates. Default is the same as number of iterations
+   to not change fitter behaviour by default.
+
+! 2016-02-13 - Gerhard Raven
+ - follow const-ification of Tr/TrackInterfaces
+ - C++11 modernization
+
+!========================= TrackFitter v5r7p1 2015-10-13 =========================
+! 2015-08-12 - Gerhard Raven
+ - remove #include of obsolete Gaudi headers
+
+!========================= TrackFitter v5r7 2015-07-20 =========================
+! 2015-07-20 - Michel De Cian
+ - Add option for multiple scattering correction to ConfiguredEventFitter, and remove some unnecessary lines
+
+! 2015-07-17 - Michel De Cian
+ - Change some warning messages to info in TrackMasterFitter, such that they can be suppressed in the HLT.
+
+! 2015-07-13 - Michel De Cian
+ - Adapt 'ConfiguredMasterFitter' in ConfiguredEventFitters to have a switch for omitting the log term for multiple scattering or not. Default is using the log term.
+
+! 2015-06-10 - Michel De Cian
+ - Check if input location in TrackEventFitter exists, otherwise skip and print an error.
+
+!========================= TrackFitter v5r6 2015-06-08 =========================
+! 2015-06-07 - Sascha Stahl
+ - TrackEventFitter: Added missing delete in case track chisq cut is not passed.
+
+!========================= TrackFitter v5r5 2015-05-26 =========================
+! 2015-05-11 - Michel De Cian
+ - Skip loop in 'outlierRemoved' in 'TrackMasterFitter' if it is clear it will not do anything anyway.
+
+! 2015-05-03 - Michel De Cian
+ - Downgrade message about non-successful propagation of track in TrackMasterFitter from 'Warning' to 'Info'
+
+!========================= TrackFitter v5r4 2015-04-21 =========================
+! 2015-04-14 - Michel De Cian
+ - Add property 'MaxChi2DoF' to TrackEventFitter (and fix identation).
+
+! 2015-04-09 - Roel Aaij
+ - Fixed check for same input and output containers to also work with TCK.
+
+!========================= TrackFitter v5r3 2015-02-23 =========================
+! 2015-02-19 - Manuel Tobias Schiller
+ - reserve space in vector of matrial intersections, so we don't have to
+   reallocate quite as frequently; this does not change results
+
+!========================= TrackFitter v5r2 2014-09-08 =========================
+! 2014-08-20 - Wouter Hulsbergen
+ - added functionality to TrackMasterFitter to _not_ set scattering momentum for velo-only tracks
+ - hide counters in TrackEventFitter behind msgLevel(INFO) to save time
+
+!========================= TrackFitter v5r1 2014-05-13 =========================
+! 2014-04-01 - Heinrich Schindler
+ - Replace VPLite measurement type by VP measurement type (r170821).
+
+! 2014-03-26 - Heinrich Schindler
+ - Add support for VP measurement type
+
+!========================= TrackFitter v5r0 2014-02-19 =========================
+! 2014-01-13 - Marco Cattaneo
+ - Remove support for VL
+
+!========================= TrackFitter v4r10p1 2013-04-30 =======================
+! 2013-04-09 - Marco Cattaneo
+ - Add __init__.py to please CMake
+
+!========================= TrackFitter v4r10 2013-02-14 =========================
+! 2013-02-07 - Sascha Stahl
+ - Added check for available upgrade detectors. It sets the correct
+    measurement providers.
+
+! 2013-02-01 - Sascha Stahl
+ - Added VL measurements to the TrackMasterFitter. 
+ - Changed structure of hittype map so that it reflects the measurements 
+   defined in Measurement.h
+
+!========================= TrackFitter v4r9 2012-11-28 =========================
+! 2012-11-26 - Marco Clemencic
+ - Fixed build with C++11.
+
+! 2012-11-22 - Marco Clemencic
+ - Added CMake configuration file.
+
+!========================= TrackFitter v4r8 2012-07-24 =========================
+! 2012-07-23 - Wouter Hulsbergen
+ - fill new extra info field with fraction of used OT times.
+
+!========================= TrackFitter v4r7 2012-03-28 =========================
+! 2012-03-28 - Wouter Hulsbergen
+ - Fix bug in commit of 2012-03-15: don't add EndVelo to Backward tracks
+ - Make sure to set number of dofs right
+
+!========================= TrackFitter v4r6p1 2012-03-27 =======================
+! 2012-03-20 - Marco Cattaneo
+ - Fix unprotected debugs
+ - Fix UNINIT_CTOR
+
+!========================= TrackFitter v4r6 2012-03-17 =========================
+! 2012-03-15 - Wouter Hulsbergen
+ - add EndVelo state to (forward) velo-only fits
+ - make sure debug mode doesn't trigger smoothing
+
+!========================= TrackFitter v4r5 2012-03-07 =========================
+! 2012-03-07 - Victor Coco
+ - propagate the FroceBiDirectionalFit option to all case in ConfiguredFitter.py
+   (instead of BiDirectionalFit)
+
+!========================= TrackFitter v4r4 2012-02-28 =========================
+! 2012-02-27 - Wouter Hulsbergen
+ - changes to revive functionality of 'forward only' fit
+
+! 2012-02-22 - Wouter Hulsbergen
+ - increased minimum number of hits left in outlier removal
+
+! 2012-02-02 - Wouter Hulsbergen
+ - small improvement in MasterFitter::outlierRemoved to call smoothing less often (only affects HLT)
+ - fix in TrackKalmanFilter to make profiling easier
+
+!========================= TrackFitter v4r3 2012-01-31 =========================
+! 2012-01-09 - Wouter Hulsbergen
+ - use new functionality in FitNode to call the smoother less often in outlier rejection
+
+!========================= TrackFitter v4r2 2011-02-28 =========================
+! 2011-02-08 - Victor Coco
+ - setback the ForceBiDirectionnal in KalmanFilter to True and reduce info priniting
+   in TrackEventFitter
+
+! 2011-02-05 - Victor Coco
+ - remove TrajFitter and TrackTrajFitter (not functionnal and not compiling under windows)
+
+!========================= TrackFitter v4r1 2011-02-07 =========================
+! 2011-02-05 - Victor Coco
+ - correct ConfiguredMasterFitter default options (FastOutlierIteration set toFalse)
+
+!========================= TrackFitter v4r0 2011-02-02 =========================
+TODO: remove unused properties from TrackKalmanFilter
+
+! 2011-02-01 - Victor Coco
+ - correct classical smoother call
+
+! 2011-01-29 - Wouter Hulsbergen
+- correct classical smoother call
+
+! 2011-01-29 - Wouter Hulsbergen
+- fixed order of updating projection and removing outlier
+
+! 2011-01-23 - Wouter Hulsbergen
+- change TrackKalmanFilter to update cache such that code can be easier profiled
+- small clean-up of TrackMasterFitter
+
+! 2011-01-20 - Victor Coco
+- Remove the catching of exception in TrackKalmanFilter
+
+! 2011-01-19 - Victor Coco
+- Check KalmanFitResult error flag at the end of the fit and retrun appropriate
+  error (in TrackKalmanFilter)
+
+! 2011-01-17 - Wouter Hulsbergen & Victor Coco
+- Major modification. All the node clculation logic went into FitNode, TrackKalmanFilter
+  is used to loop over nodes. 
+
+!========================= TrackFitter v3r2 2011-01-17 =========================
+! 2011-01-11 - Victor Coco
+- get the inverse matrix as reference in predictReverseFit in TrackKalmanFilter
+
+! 2010-12-21 - Victor Coco
+- Change in predictReverse function of TrackKalmanFilter to get the cached 
+  inverse transport matrix store in FitNode  instead of recomputing it 
+  (comuptation done when transport  matrix is set)
+  Gain 7% of cycles spent in the fitter in HLT.
+
+!========================= TrackFitter v3r0p1 2010-12-16 =========================
+! 2010-12-02 - Marco Cattaneo
+ - Fix compilation problem with icc and Boost 1.44
+ - Fix also some icc remarks
+
+!=========================== TrackFitter v3r0 2010-08-25 ===================
+! 2010-08-23 - Wouter Hulsbergen
+ - adapt to interface change of IMaterialLocator
+
+! 2010-08-13 - Wouter Hulsbergen
+ - restore TrackKalmanFilter with bug fixed
+ - ignore tracks with bad initialization in TrackEventFitter
+ - split counters by track type in TrackEventFitter
+
+! 2010-08-07 - Stephanie Hansmann-Menzemer
+ - revert changes from WH as they screw up track calo matching
+
+!=========================== TrackFitter v2r50 2010-07-20 ===================
+! 2010-07-23 - Wouter Hulsbergen
+ - set filtered states in FitNode
+
+!=========================== TrackFitter v2r49 2010-07-20 ===================
+! 2010-07-07 - Wouter Hulsbergen
+ - Fixed memory leak affecting HLT2
+ - Added counter for number of tracks changing sign (to help debugging field problems)
+
+!=========================== TrackFitter v2r48p1 2010-06-21===============
+! 2010-06-07 - Rob Lambert
+ - Fixes for windows warnings savannah #15808
+
+!=========================== TrackFitter v2r48 2010-05-21=================
+! 2010-05-12 - Rob Lambert
+ - Review warnings
+
+! 2010-04-26 Wouter Hulsbergen
+- for HLT: fit velo-backward tracks towards vertex instead of away from it
+- reduced verbosity
+- introduced flag for minimum scattering momentum, but not yet used
+
+!=========================== TrackFitter v2r47 2010-04-09=================
+! 2010-04-08 - Wouter Hulsbergen
+ - fixed crash when track has no measurements
+ - replaced LoKi::Range with Gaudi::Range
+ - introduced a few more toolhandles
+
+!=========================== TrackFitter v2r46 2010-03-24=================
+! 2010-03-24 - Rob Lambert
+ - Fixes for windows warnings
+ - Bugfix in TrackMasterFitter.h in choosing extrapolator
+
+! 2010-03-22 - Rob Lambert
+ - Fixes for windows warnings savannah 64668
+ - TrackMasterFitter: Supressed info messages to debug in initialize
+
+!=========================== TrackFitter v2r45 2010-02-24=================
+! 2010-02-26 - Wouter Hulsbergen
+ - fixed prefit flag in fastfitter configuration
+
+! 2010-02-23 - Wouter Hulsbergen
+ - set default value of UpdateTransport to true (temporary)
+ - remove state-at-beamline for tracks without velo and TT hits
+ - added flag to update material corrections in each iteration (default false)
+
+! 2010-02-16 - Rob Lambert
+ - Wouter: changed converged criterion in fitter
+
+!=========================== TrackFitter v2r44p1 2010-02-16=================
+! 2010-02-15 - Wouter Hulsbergen
+ - adapted configurable to small change in TrajOTProjector
+
+!=========================== TrackFitter v2r44 2010-01-21=================
+! 2009-12-17 - Wouter Hulsbergen
+ - added more stable expression for standard smoother. to be published!
+
+!=========================== TrackFitter v2r43 2009-12-10=================
+! 2009-12-07 - Wouter Hulsbergen
+ - bug fix: in a track refit, first count the outliers before removing more of them.
+ - moved code to compute segment chisquares to KalmanFitResult.
+
+!=========================== TrackFitter v2r42 2009-12-07 =================
+! 2009-12-06 - Wouter Hulsbergen
+ - bug fix in TrackMasterFitter::projectReference: oce statuscode with
+   limited scope was hiding another statuscode. as a result the failure was not
+   properly returned.
+ - added flag to set number of outlier iterations for configured fitters
+
+!=========================== TrackFitter v2r41 2009-11-27 =================
+! 2009-11-26 - Manuel Tobias Schiller
+ - use the Cholesky decomposition provided in ROOT 5.24 and up instead of our
+   own version; the ROOT version grew out of out own code in LHCbMath
+
+!=========================== TrackFitter v2r40p1 2009-11-26 =================
+! 2009-11-26 - Wouter Hulsbergen
+ - Patch to work around Gaudi problem with toolhandle configuration
+
+!=========================== TrackFitter v2r40 2009-11-22 ===================
+! 2009-11-22 - Wouter Hulsbergen
+  - Added property to set fixed scattering momentum, e.g. for magnet off data
+  - Made fitter a toolhandle to make adjustment of configuration easier 
+
+! 2009-11-19 - Wouter Hulsbergen
+ - Important bug fix in ConfiguredFitters: mustbe very careful with 'mutable' 
+   default arguments in python. See
+   http://www.deadlybloodyserious.com/2008/05/default-argument-blunders/
+
+! 2009-11-17 - Wouter Hulsbergen
+ - Update of ConfiguredFitters:
+    - use TrackSys() flag
+    - clean-up
+
+!=========================== TrackFitter v2r39 2009-11-13 ===================
+! 2009-11-11 - Kostyantyn Holubyev
+ - New configured fitters (ConfiguredFit - a simple wrapper for
+   ConfiguredEventFitter, and ConfiguredFitSeed) are defined.
+   All other fitters are now obsolete. See previous comments by Wouter.
+
+! 2009-11-11 - Wouter Hulsbergen
+ - Moved projectors to masterfitter. Store seed matrix in new class KalmanFitResult.
+
+! 2009-11-10 - Wouter Hulsbergen
+ - Fix call to node range in TrackMasterFitter
+
+! 2009-11-04 - Wouter Hulsbergen
+ - Added configuration for cosmics fitter (with drifttimes)
+
+!=========================== TrackFitter v2r38 2009-10-20 ===================
+! 2009-10-13 - Wouter Hulsbergen
+ - Added extra extrapolator to TrackMasterFitter for velo-only tracks.
+   Configuration now identical for all track types except Seed.
+
+! 2009-10-08 - Wouter Hulsbergen
+ - Adapted to changes in LHCb::Track 
+
+! 2009-10-05 - Wouter Hulsbergen
+ - Update ConfiguredFitters: remove default prefitters, add some flags 
+
+! 2009-09-30 - Marco Cattaneo
+ - Use Warning() instead of warning() in previous change
+
+! 2009-09-28 - Jeroen van Tilburg
+ - Removed the lines in TrackMasterFitter that check for the number of
+   measurements. This is not strictly needed. Added a warning in
+   TrackKalmanFilter when ndof is below zero.
+
+!=========================== TrackFitter v2r37 2009-09-03 ===================
+! 2009-09-01 Wouter Hulsbergen
+ - Prefit iteration is now implicit in fit: as long as ambiguity of OT hit is not
+   set, it will not use the drifttime. Adapted number of iterations of normal fit
+   to take this into account.
+
+! 2009-08-17 Stephanie Hansmann-Menzemer
+ - Fix typo in DoF in Configurables.py
+
+! 2009-08-08 M Needham
+ - Correct DOF to 4 in case of field off  
+
+!=========================== TrackFitter v2r36 2009-07-28 ===================
+! 2009-07-16 - Wouter Hulsbergen
+ - Fixed small bug in updating ref vectors in TrackMasterFitter. This
+ had as a consequence that we were running the 2nd iteration of the
+ Prefit for nothing since it would not actually use this as a
+ reference in the normal fit. When fixing this, we can just a single
+ iteration prefit with no change in fitter output:
+ - Changed prefitters to run only single iteration.
+
+! 2009-07-14 - Marco Cattaneo
+ - Remove obsolete TrackFitter_dll.cpp file
+
+! 2009-07-10 - Wouter Hulsbergen
+ - added 'convergence criterium': can now optionally run fit until it has converged
+ - moved addition of z-position reference nodes from configuration into fit to
+   simplify configuration
+ - added state for last measurement
+
+!=========================== TrackFitter v2r35 2009-07-14 ===================
+! 2009-07-08 - Wouter Hulsbergen
+ - introduced ITrackKalmanFilter as a base class for TrackKalmanFilter
+ - adapted to migration of track classes to TrackKernel
+
+!=========================== TrackFitter v2r34 2009-06-18 ===================
+! 2009-06-03 - Wouter Hulsbergen
+ - bug fix in fast fit configurable
+
+!=========================== TrackFitter v2r33 2009-05-08 ===================
+! 2009-04-03 - Jose A. Hernando (from X. Cid)
+ - in src/TrackMasterExtrapolator.h(cpp) add UseSeedStateErrors property to fit
+   the measurement using the seed state errors (to fit the muon part of a track
+   using the state from the 'long' track)
+
+!=========================== TrackFitter v2r32 2009-03-10 ===================
+! 2009-03-08 - Stephanie Hansmann-Menzemer
+ - use StateDetailedBetheBlochEnergyCorrectionTool as default in the fit
+
+!=========================== TrackFitter v2r31 2009-02-20 ===================
+! 2009-02-12 - Wouter Hulsbergen
+ - add job option for minimum number of remaining hits in outlier removal
+   
+! 2009-02-12 - Wouter Hulsbergen
+ - by request from gerhard: configuredfitter now also takes an instance as argument
+
+! 2009-02-10 - Wouter Hulsbergen
+ - Added flag to use lite clusters
+ - Set up fit for merged OT events when running cosmics
+ - Fixed bug in configuration of FitVelo
+ - Fixed bug due to using unkeyed function arguments everywhere
+
+! 2009-01-19 - David Hutchcroft
+ - Added ability to fit Velo "lite" clusters
+   Added ConfiguredFitForwardLiteOnly and ConfiguredFitVeloLiteOnly to 
+   ConfiguredFitters.py
+
+!=========================== TrackFitter v2r30 2009-01-13 ===================
+! 2009-01-13 - Wouter Hulsbergen
+ - Change outlier rejection such that minimum number of hits is left in each system
+
+! 2008-12-10 - Wouter Hulsbergen
+ - Fix invalid iterator initialisation flagged by gcc 4.3
+
+! 2008-12-02 - Wouter Hulsbergen
+ - Add 'NoDriftTime' option to StraighLineFitter
+ - adapted to change in Track::stateAt
+
+!=========================== TrackFitter v2r29 2008-11-21 ===================
+! 2008-11-18 - Marco Cattaneo
+ - Fix to VeloTT configured fitter to put back StateAtBeamLine
+
+! 2008-11-14 - Chris Jones
+ - Fixes to python Configurable for latest Gaudi changes
+
+! 2008-11-13 - Wouter Hulsbergen
+ - Added ConfiguredMasterFitter and ConfiguredFastFitter which are
+ tools. (Before we only had configured algs)
+
+! 2008-10-27 - Marco Clemencic
+ - Fixed a configuration problem in TrackFitter/ConfiguredFitters.py: the
+   property for a public tool should be set from the tool configurable
+   instance (or from the its method .getFullName()).
+
+! 2008-10-23 - Wouter Hulsbergen
+ - flag outliers, rather than remove them 
+
+! 2008-10-21 - Chris Jones
+ - Adapt to python changes in TrackSys
+
+! 2008-10-21 - Wouter Hulsbergen
+ - change strategy for FitVelo: don't use curvature
+ - add configurable for ConfiguredFastVeloOnlyFit for use in trigger
+ - added flag to force making measurements
+ - create node for state at beamline before fitting track
+ - protection for tracks with insufficient active measurements
+
+!=========================== TrackFitter v2r28 2008-10-02 ===================
+! 2008-09-26 - Wouter Hulsbergen
+ - added ConfiguredStraightLineFit
+
+! 2008-09-15 - Wouter Hulsbergen
+ - use new function in TrackProjector interface
+
+! 2008-09-05 - Wouter Hulsbergen
+ - added python configurables for track fitters, including a 'fast fit'
+ - add option to ignore e-loss corrections
+ - move setting of FitStatus flag from event fitter to master fitter
+
+!=========================== TrackFitter v2r27 2008-07-29 ===================
+! 2008-07-24 - Wouter Hulsbergen
+ - adapted to change in FitNode
+ - revived standard smoother
+
+!=========================== TrackFitter v2r26 2008-07-17 ===================
+! 2008-07-15 - Wouter Hulsbergen
+ - Use cholesky decomposition for track covariance matrix inversion
+   (Manuel Schiller)
+
+!=========================== TrackFitter v2r25 2008-07-02 ===================
+! 2008-07-01 - Marco Cattaneo
+ - In TrackKalmanFilter, downgrade Errors to Warnings, reduce verbosity (now
+   Warnings only printed once, more info available in debug() )
+
+! 2008-06-17 - Louis Nicolas
+ - Added more safety checks in TrackMasterFitter
+ - Added minMomentumForELossCorr and maxMomentumForScattering variables in TrackMasterFitter
+
+! 2008-06-06 - Wouter Hulsbergen
+ - fail fit if smoother fails to calculate reasonable error on residual
+
+! 2008-06-06 - Louis Nicolas
+ - Added safety check to avoid FPE in TrackKalmanFilter::updateResidual
+
+! 2008-05-27 Wouter Hulsbergen
+ - bug fix: don't remove outlier from track with 1 dof
+ - added debug output
+
+!=========================== TrackFitter v2r24 2008-04-04 ===================
+! 2008-03-31 M Needham 
+ - Follow changes in fitter interface 
+
+!=========================== TrackFitter v2r23 2008-01-30 ===================
+! 2008-01-29 Wouter Hulsbergen
+ - changes in TrackKalmanFilter to improve fit stability
+    - remove smoothing of nodes outside measurement range
+    - better preconditioning for matrix inversion
+    - more stable expression for smooting covariance matrix
+ - increased errors of initial cov matrix to be suitable also for velo-TT and T tracks
+
+! 2007-12-10 Wouter Hulsbergen
+ - moved filling of material corrections and propagation matrices to
+   TrackMasterFitter, making use of trajectory approximation
+
+!=========================== TrackFitter v2r22 2007-12-03 ===================
+! 2007-11-30 Wouter Hulsbergen
+ - set and use reference for each node (no longer from measurement)
+ - set references using TrackTraj from all existing states
+ - add counters to TrackFitEvent 
+
+!=========================== TrackFitter v2r21 2007-11-06 ===================
+! 2007-11-06 M Needham
+  - Put checking on by default
+
+! 2007-11-05 M Needham
+  - fix unchecked status codes
+  - use Warning() rather than private failure method in TrackKalmanFilter
+  - make checkInvertMatrix and CheckPositiveMatrix faster in TrackKalmanFilter 
+  - add possibility to check [safe] or not [faster] in TrackKalmanFilter
+
+!=========================== TrackFitter v2r20 2007-10-25 ===================
+! 2007-10-25 - Wouter Hulsbergen
+ - fixed unchecked status code when projecting reference, leading to fatal
+   error in transportsvc
+
+!=========================== TrackFitter v2r19 2007-10-08 ===================
+! 2007-10-03 - Wouter Hulsbergen
+ - make sure first measurement state still added to track even if extrapolation
+   to beam line fails
+ - add logic to create only nodes for reference z-positions that are between the
+   first and the last measurement. This will become the default after effects in
+   matching are under control.
+
+! 2007-09-30 - Edwin Bos
+ - Added jobOption to switch on/off the invocation of the 'makeNodes' method.
+   When off, nodes and references are not (re)made, for fitting after prefitting
+
+! 2007-09-28 Wouter Hulsbergen
+ - KalmanFilter: 'bug' fix: set reference vector from prediction in case it is
+   not set before. We don't want this, but this is exactly how it used to be and
+   the better solution is more work.
+
+! 2007-09-25 Wouter Hulsbergen
+ - KalmanFilter: reference state now only projected in forward filter
+
+!=========================== TrackFitter v2r18 2007-09-20 ===================
+! 2007-09-13 M Needham
+ - ensure error q/p is not zero for infinite momentum tracks  
+
+! 2007-09-13 M Needham
+ - stable sort the nodes rather than sort (ensure order is always same) 
+
+! 2007-09-05 - Wouter Hulsbergen
+ - revision of verbose/debug output
+ - fixed bug in code committed yesterday that lead to run-time exception
+   for failed track fits
+
+! 2007-09-04 - Wouter Hulsbergen
+ - removed 'Upstream' job-option from KalmanFitter since that already existed in
+   MasterFitter client
+ - added filling of delta-chisquare contributions on all FitNodes (for breakpoint
+   analysis)
+ - added method to fill 'extra-info' with segment chisquares to MasterFitter
+
+!=========================== TrackFitter v2r17 2007-07-05 ===================
+! 2007-07-05 - Edwin Bos
+ - Removed transportMatrix() use from TrackKalmanFilter
+
+! 2007-06-29 - Eduardo Rodrigues
+ - correct useless "make seed method robust fix": the states on a track
+   are ordered in z by construction
+
+! 2006-06-26 M. Needham
+ - In TrackMasterFitter:
+   * Add some const
+   * make seed method robust (ie not assumed states ordered by z)
+ - In TrackKalmanFilter
+   * Add some const
+   * Follow bug fix in += operator for Sym matrix
+
+!=========================== TrackFitter v2r16 2007-05-14 ===================
+! 2007-06-13 - Eduardo Rodrigues
+ - Default number of fit iterations set to 3 (in TrackMasterFitter.cpp)
+   so that long tracks are fitted with all default options
+
+!=========================== TrackFitter v2r15 2007-05-03 ===================
+! 2007-05-16 - Marco Cattaneo
+ - Fix a doxygen warning
+
+! 2007-05-16 - Marco Cattaneo for Wouter
+ - Improvements to matrix handling
+
+! 2007-05-03 M .Needham
+ - Correct counter service for monitoring fit success rate.
+                                                                            
+! 2007-04-27 M .Needham
+ - Use counter service for monitoring fit success rate.
+
+!=========================== TrackFitter v2r14 2007-04-17 ===================
+! 2007-04-17 - Gerhard Raven
+ - Add TrajFitter, an implementation of the ITrajFitter interface
+   which allows one to fit any DifTraj<N> implementation to a set
+   of LHCb::Measurement
+ - Add TrackTrajFitter, an example implementation of the ITrackFitter interface
+   using the above ITrajFitter
+
+! 2007-04-17 - Jeroen VAN TILBURG
+ - Bug fix in TrackKalmanFilter: residuals from last measurement were not
+   calculated.
+
+!=========================== TrackFitter v2r13 2007-03-21 ===================
+! 2007-03-21 - Marco Cattaneo
+ - Fix doxygen warnings
+
+! 2007-03-20 M. Needham
+ - Make sure StatusCodes are tested
+ - Remove TrackFitter_load.cpp
+
+!=========================== TrackFitter v2r12 2006-12-18 ===================
+! 2006-12-15 - Gerhard Raven
+ - use the projector selector tool to obtain the relevant projector
+   instead of using the master projector
+
+!=========================== TrackFitter v2r11 2006-11-28 ===================
+! 2006-11-28 - Eduardo Rodrigues
+ - std::ostringstream messaging corrected to please valgrind: tracks should
+   not be assumed to always be part of a container
+
+! 2006-11-22 - Jeroen van Tilburg
+ - TrackKalmanFilter: Adapted to new State naming conventions in FitNode.
+   Introduced FitUpstream job-option which must be consistent with the one
+   in TrackMasterFitter.
+
+! 2006-11-21 - Marco Cattaneo
+ - Fix propagation of error return status of biSmooth() step in TrackKalmanFilter
+ - use gsl_pow_2 instead of pow(x,2.) in TrackMasterFitter
+
+!=========================== TrackFitter v2r10 2006-11-02 ===================
+! 2006-11-02 - Jeroen VAN TILBURG
+ - Added job option flag "UnbiasedResiduals" to calculate the unbiased
+   residuals. Default is false.
+ - Fixed small decrease in efficiency for match tracks: the prediction and
+   smoother step in the bidirectional fit are not applied for the first node.
+
+! 2006-10-20 - Jeroen VAN TILBURG
+ - Calculate unbiased residual in bidirectional smoother step.
+ - Propagate changed in TrackEvent and TrackFitEvent. Clean up code.
+
+!=========================== TrackFitter v2r9 2006-10-18 ====================
+! 2006-10-18 - Jeroen VAN TILBURG
+ - Bug fix: residuals were not updated in smoothing step of bi-directional fit.
+   This bug affects the final chi2 of the track and the outlier removal.
+
+! 2006-10-11 - Marco Cattaneo
+ - Clean up warning messages
+
+! 2006-10-10 M Needham
+ - Correct state at first measurement on backward tracks
+
+! 2006-10-07 Eduardo Rodrigues
+ - fixed inconsistency in option name (for case-sensitive options parser)
+
+!=========================== TrackFitter v2r8 2006-09-21 ====================
+! 2006-09-21 - Jeroen VAN TILBURG
+ - Using the reference state for extrapolating. This improves the dp/p
+   resolution for forward tracks. References states are close enough to the
+   true trajectory such that one call to the extrapolators is sufficient.
+
+ - Improved calculation of noise matrix in predictReverseFit(). Mathematically
+   this is now the correct way of calculating the reverse noise. Fast
+   bidirectional fit (storeTransport=true) is now (almost) as good as slow one.
+
+!=========================== TrackFitter v2r7 2006-08-03 ====================
+! 2006-08-02 Eduardo Rodrigues
+ - bi-directional fit by default
+ - reference information now set by default (uses by default the tool
+   for long tracks)
+ - Maximum 2 outliers removed by default
+ - using the pre-defined z-positions related to state locations from the
+   new file StateParameters.h instead of old plain option
+
+!=========================== TrackFitter v2r6 2006-07-27 ====================
+! 2006-07-27 - Eduardo Rodrigues
+ - Options "StatesAtMeasZPos" and "ZPositions" exclusive
+ - state at first measurement always saved
+ - code simplifications
+ - removal of outliers again off until consequences are fully tested
+
+! 2006-07-27 - Marco Cattaneo
+ - More cleanups of Warnings
+ - Get units from GaudiKernel/SystemOfUnits.h
+
+! 2006-07-26 - Eduardo Rodrigues
+ - switch back on the removal of outliers (max 5 allowed by default)
+ - track fit set as failed when not possible to determine all the requested
+   states on a track
+ - setting of states at measurements z-positions (when requested) handled
+   correctly when outliers are removed
+ - clean-up of unnecessary methods/code
+ - improved debug/warning/error messages, for clarity
+
+!=========================== TrackFitter v2r5 2006-06-30 ====================
+! 2006-06-23 - Jeroen Van Tilburg 
+ - Improved the bidirectional fit in TrackKalmanFilter. Re-use of transport 
+   parameters in the reverse direction. Store the predicted state from the
+   reverse fit.
+
+!=========================== TrackFitter v2r4 2006-06-20 ====================
+! 2006-06-20 - Eduardo Rodrigues
+ - propagation of changes from TrackEvent
+ - renaming in TrackMasterFitter option for consistency with private tool
+   instance name: TrackNodeFitterName becomes NodeFitter
+
+! 2006-06-20 M Needham
+ - minor bug fix 
+
+! 2006-06-19 - Jeroen Van Tilburg
+ - Added bidirectional fit to the TrackKalmanFilter. It can be turned on by
+   a joboption: BiDirectionalFit.
+
+! 2006-06-15 - Jeroen van Tilburg
+ - Remove check on z before extrapolation so that the transport matrix is
+  initialized correctly.
+ - Moved the setting of the transport matrix to before the if statement, such
+  that it is set also when the transport parameters are not reused.
+
+! 2006-06-15 - Gerhard Raven
+ - Change matrix manipulations to benefit from making the projection Matrix
+   a 1x5 matrix instead of a vector; remove related hacks that are no longer
+   needed (TrackVectorProd)
+ - change dynamic_cast to FitNode such that when it fails we get a 
+   'bad cast' exception instead of a SEGV due to a 0-pointer dereference
+
+! 2006-06-14 - Jeroen van Tilburg
+ - Changed meaning of NumberFitIterations: iterations of the fit without
+   outliers removal. Only the reference vectors are updated.
+ - Added joboption MaxNumberOutliers (set to 0) to determine how many outliers
+   are maximally allowed to be removed.
+
+! 2006-06-14 - Eduardo Rodrigues
+ - fixed bug in using the tool to set reference info to fitter
+ - added new option in TrackMasterFitter for dealing with reference info tool
+
+! 2006-06-12 M. Needham
+ - Add possibility to set reference information to fitter
+
+! 2006-06-06 - Eduardo Rodrigues
+ - removed explicit 5-dimension number from code
+ - migration to Gaudi::Units
+ - no z-check when adding state closest to beam-line
+ - TracksOutContainer option in TrackEventFitter set to same as input
+   by default (no more need to set it explicitly for default config.)
+ - modifications from removing all "using namespace..." in header files
+
+! 2006-06-01 M.Cattaneo
+ - Adapt to move of MatrixManip.h to LHCbMath
+ - Adapt to removal of Measurement::update method
+
+!=========================== TrackFitter v2r3 2006-05-15 ====================
+! 2006-05-15 M. Needham
+ - correct name of setter for node 
+
+! 2006-05-15 - Jeroen van Tilburg
+ - TrackMasterFitter: Put in the functionality to automatically increase the
+   cov. matrix to the initial value.
+
+!=========================== TrackFitter v2r2 2006-05-03 ====================
+! 2006-05-02 - Eduardo Rodrigues
+ - propagation of the renaming of the Track Event Model typedefs
+   (in TrackTypes.h in Kernel/LHCbDefinitions)
+
+!=========================== TrackFitter v2r1 2006-04-19 ====================
+! 2006-04-19 - Jeroen van Tilburg
+ - TrackKalmanFilter: introduced temporary vector in predict method. Needed
+   since SMatrix inlines the actual calculation.
+
+! 2006-04-18 - Jeroen van Tilburg
+ - TrackKalmanFilter: use new transportIsSet method.
+
+! 2006-04-12 - Jeroen van Tilburg
+ - TrackKalmanFilter: Replace Place_at with operator equal assignment. 
+ - TrackKalmanFilter: Fix the return type for TrackVectorProd method.
+
+! 2006-04-06 - Jeroen van Tilburg
+ - TrackKalmanFilter: use Symmetrize function to regain a symmetric covariance
+   matrix.
+ - TrackKalmanFilter: get the measure error from the Node.
+
+! 2006-03-26 - Eduardo Rodrigues
+ - adaptations to new SMatrix-5.10.00b and higher, and new Gaudi
+ - minor bugs corrected
+
+! 2006-03-03 - Eduardo Rodrigues
+ - outliers removal improved: when an outlier measurement is removed from
+   the node it is also removed from the track (needed for consistency)
+
+!=========================== TrackFitter v2r0 2006-02-13 ====================
+! 2006-02-08 - Eduardo Rodrigues
+ - migration to LHCb v20r0
+ - Geant3/Geant4 units conversions for matrix inversions done via the new
+   TrackUnitsConverters.h file in TrackEvent
+ - sorting of states removed as done automatically in Track class
+
+!=========================== TrackFitter v1r1 2006-01-27 ====================
+! 2006-01-20 - Eduardo Rodrigues
+ - TrackKalmanFilter: tools made private -> possible to run 2 instances
+   of the fitter with, say, different projectors
+
+! 2006-01-17 - Jeroen van Tilburg
+ - Added the required initialisation of GaudiTool in TrackMasterFitter.cpp and
+   TrackKalmanFilter.cpp.
+ - TrackMasterFitter.cpp: use looseTolerance to compare states at z-positions.
+
+!=========================== TrackFitter v1r0 2005-11-28 ====================
+! 2005-11-28 - Eduardo Rodrigues
+ - minor cosmetics
+
+! 2005-11-21 - Jeroen van Tilburg
+ Many changes. Main modifications:
+ - Split the TrackKalmanFilter tool into a TrackMasterFitter tool and a
+   TrackKalmanFilter tool. The latter fits a track starting from FitNodes
+   (one iteration). The former takes care of outlier removal, refitting,
+   states at predefined z-positions.
+ - Added the FitNodes to the Track (Track still has a vector of Nodes).
+ - Added Location-enum to the predefined z positions.
+ - Cleaned up the debug statements.
+ - Corrected bug: state at beam line was not added to the track.
+
+! 2005-10-25 - Eduardo Rodrigues
+ - TrackEventFitter and TrackKalmanFilter cope with both upstream and
+   downstream fitting (only downstream fitting possible before)
+ - buglet corrected in dealing with residual errors
+
+! 2005-10-21 - Eduardo Rodrigues
+ - TrackKalmanFilter: sequence filtering-smoothing fully working
+
+! 2005-10-13 - Eduardo Rodrigues
+ - propagation of changes from TrackEvent
+
+! 2005-09-28 - Eduardo Rodrigues
+ - update of measurements (so-called reference trajectories) implemented
+
+! 2005-09-26 - Eduardo Rodrigues
+ - outliers removal implemented
+
+! 2005-09-02 - Eduardo Rodrigues
+ - first usable version of the Kalman filter
+ - version with extra debugging for tests and comparisons with old model
+ - several omissions and bugs corrected
+
+! 2005-06-29 - Eduardo Rodrigues
+ - KalmanFilter tool renamed to TrackKalmanFilter. And functionality added
+ - Windows necessary files TrackFitter_load.cpp and TrackFitter_dll.cpp added
+ - debug version of both fitting algorithm and tool
+
+! 2005-05-27 - Eduardo Rodrigues
+ - first version of main algorithm for fitting all tracks added:
+   adaptation from Tr/TrFitter/TrEventTracksFitter to new event model
+
+! 2005-04-18 - Jose A. Hernando, Eduardo Rodrigues
+ - Translating the Tr/TrFitter packages for the new track event model
+ - original code from:
+   Olivier Callot
+   Matthew Needham
+   Rutger van der Eijk
+ - Kalman fitter and smoother tool added

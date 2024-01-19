@@ -1,0 +1,204 @@
+/*****************************************************************************\
+* (c) Copyright 2000-2018 CERN for the benefit of the LHCb Collaboration      *
+*                                                                             *
+* This software is distributed under the terms of the GNU General Public      *
+* Licence version 3 (GPL Version 3), copied verbatim in the file "COPYING".   *
+*                                                                             *
+* In applying this licence, CERN does not waive the privileges and immunities *
+* granted to it by virtue of its status as an Intergovernmental Organization  *
+* or submit itself to any jurisdiction.                                       *
+\*****************************************************************************/
+int KalmanParametrizations::extrapUTT( double zi, double zf, int quad_interp, double& x, double& y, double& tx,
+                                       double& ty, double qOp, double* der_tx, double* der_ty, double* der_qop ) const
+// extrapolation from plane zi to plane zf, from initial state (x,y,tx,ty,qop) to final state (x,y,tx,ty)
+// the bending from origin to zi is approxmated by adding bend*qop to x/zi.
+// quad_inperp (logical): if true, the quadratic interpolation is used (better, with a little bit more computations)
+// XGridOption and YGridOption describe the choice of xy grid. By default, it is 1 (equally spaced values)
+{
+  double qop = m_qop_flip ? -qOp : qOp;
+
+  double xx( 0 ), yy( 0 ), dx, dy, ux, uy;
+  int    ix, iy;
+  // if(fabs(x)>Xmax||fabs(y)>Ymax) return 0;
+  switch ( XGridOption ) {
+  case 1:
+    xx = x / Xmax;
+    break;
+  case 2:
+    xx = ( x / Xmax ) * ( x / Xmax );
+    if ( x < 0 ) xx = -xx;
+    break;
+  case 3:
+    xx = x / Xmax;
+    xx = xx * xx * xx;
+    break;
+  case 4:
+    xx = asin( x / Xmax ) * 2 / M_PI;
+    break;
+  }
+  switch ( YGridOption ) {
+  case 1:
+    yy = y / Ymax;
+    break;
+  case 2:
+    yy = ( y / Ymax ) * ( y / Ymax );
+    if ( y < 0 ) yy = -yy;
+    break;
+  case 3:
+    yy = y / Ymax;
+    yy = yy * yy * yy;
+    break;
+  case 4:
+    yy = asin( y / Ymax ) * 2 / M_PI;
+    break;
+  }
+  dx = Nbinx * ( xx + 1 ) / 2;
+  ix = dx;
+  dx -= ix;
+  dy = Nbiny * ( yy + 1 ) / 2;
+  iy = dy;
+  dy -= iy;
+
+  double bendx = BENDX + BENDX_X2 * ( x / zi ) * ( x / zi ) + BENDX_Y2 * ( y / zi ) * ( y / zi );
+  double bendy = BENDY_XY * ( x / zi ) * ( y / zi );
+  ux           = ( tx - x / zi - bendx * qop ) / Dtxy;
+  uy           = ( ty - y / zi - bendy * qop ) / Dtxy;
+  // if(fabs(ux)>2||fabs(uy)>2) return 0;
+
+  KalmanParametrizationsCoef c;
+
+  if ( quad_interp ) {
+    double gx, gy;
+    gx = dx - .5;
+    gy = dy - .5;
+    // if(gx*gx+gy*gy>.01) return 0;
+    if ( ix <= 0 ) {
+      ix = 1;
+      gx -= 1.;
+    }
+    if ( ix >= Nbinx - 1 ) {
+      ix = Nbinx - 2;
+      gx += 1.;
+    }
+    if ( iy <= 0 ) {
+      iy = 1;
+      gy -= 1.;
+    }
+    if ( iy >= Nbiny - 1 ) {
+      iy = Nbiny - 2;
+      gy += 1.;
+    }
+
+    int rx, ry, sx, sy;
+    rx = ( gx >= 0 );
+    sx = 2 * rx - 1;
+    ry = ( gy >= 0 );
+    sy = 2 * ry - 1;
+    KalmanParametrizationsCoef c00, cp0, c0p, cn0, c0n, cadd;
+    c00        = C[ix][iy];
+    cp0        = C[ix + 1][iy];
+    c0p        = C[ix][iy + 1];
+    c0n        = C[ix][iy - 1];
+    cn0        = C[ix - 1][iy];
+    cadd       = C[ix + sx][iy + sy];
+    double gxy = gx * gy, gx2 = gx * gx, gy2 = gy * gy, g2 = gx * gx + gy * gy;
+    c = c00 * ( 1 - g2 ) + ( cp0 * ( gx2 + gx ) + cn0 * ( gx2 - gx ) + c0p * ( gy2 + gy ) + c0n * ( gy2 - gy ) ) * .5 +
+        ( ( c00 + cadd ) * sx * sy - cp0 * rx * sy + cn0 * ( !rx ) * sy - c0p * ry * sx + c0n * ( !ry ) * sx ) * gxy;
+  } else {
+    double ex, fx, ey, fy;
+    int    jx, jy;
+    if ( dx < .5 ) {
+      jx = ix - 1;
+      ex = .5 + dx;
+      fx = .5 - dx;
+    } else {
+      jx = ix + 1;
+      ex = 1.5 - dx;
+      fx = dx - .5;
+    }
+    if ( dy < .5 ) {
+      jy = iy - 1;
+      ey = .5 + dy;
+      fy = .5 - dy;
+    } else {
+      jy = iy + 1;
+      ey = 1.5 - dy;
+      fy = dy - .5;
+    }
+    if ( ix < 0 || ix >= Nbinx || iy < 0 || iy >= Nbiny || jx < 0 || jx >= Nbinx || jy < 0 || jy >= Nbiny ) return 0;
+    KalmanParametrizationsCoef c_ii = C[ix][iy], c_ij = C[ix][jy], c_ji = C[jx][iy], c_jj = C[jx][jy];
+    // printf("x00 %f %f %f %f\n",c_ii.x00[0],c_ij.x00[0],c_ji.x00[0],c_jj.x00[0]);
+    c = c_ii * ex * ey + c_ij * ex * fy + c_ji * fx * ey + c_jj * fx * fy;
+  }
+  // straight line
+  x = x + tx * ( zf - zi );
+  y = y + ty * ( zf - zi );
+
+  for ( int k = 0; k < 4; k++ ) der_tx[k] = der_ty[k] = der_qop[k] = 0;
+  // corrections to straight line -------------------------
+  double fq = qop * PMIN;
+  // x and tx ---------
+  double ff = 1;
+  double term1, term2;
+  for ( int deg = 0; deg < c.Degx1; deg++ ) {
+    term1 = c.x00[deg] + c.x10[deg] * ux + c.x01[deg] * uy;
+    term2 = c.tx00[deg] + c.tx10[deg] * ux + c.tx01[deg] * uy;
+    der_qop[0] += ( deg + 1 ) * term1 * ff;
+    der_qop[2] += ( deg + 1 ) * term2 * ff;
+    ff *= fq;
+    x += term1 * ff;
+    tx += term2 * ff;
+    der_tx[0] += c.x10[deg] * ff;
+    der_ty[0] += c.x01[deg] * ff;
+    der_tx[2] += c.tx10[deg] * ff;
+    der_ty[2] += c.tx01[deg] * ff;
+  }
+  for ( int deg = c.Degx1; deg < c.Degx2; deg++ ) {
+    der_qop[0] += ( deg + 1 ) * c.x00[deg] * ff;
+    der_qop[2] += ( deg + 1 ) * c.tx00[deg] * ff;
+    ff *= fq;
+    x += c.x00[deg] * ff;
+    tx += c.tx00[deg] * ff;
+  }
+  // y and ty ---------
+  ff = 1;
+  for ( int deg = 0; deg < c.Degy1; deg++ ) {
+    term1 = c.y00[deg] + c.y10[deg] * ux + c.y01[deg] * uy;
+    term2 = c.ty00[deg] + c.ty10[deg] * ux + c.ty01[deg] * uy;
+    der_qop[1] += ( deg + 1 ) * term1 * ff;
+    der_qop[3] += ( deg + 1 ) * term2 * ff;
+    ff *= fq;
+    y += term1 * ff;
+    ty += term2 * ff;
+    der_tx[1] += c.y10[deg] * ff;
+    der_ty[1] += c.y01[deg] * ff;
+    der_tx[3] += c.ty10[deg] * ff;
+    der_ty[3] += c.ty01[deg] * ff;
+  }
+  for ( int deg = c.Degy1; deg < c.Degy2; deg++ ) {
+    der_qop[1] += ( deg + 1 ) * c.y00[deg] * ff;
+    der_qop[3] += ( deg + 1 ) * c.ty00[deg] * ff;
+    ff *= fq;
+    y += c.y00[deg] * ff;
+    ty += c.ty00[deg] * ff;
+  }
+  for ( int k = 0; k < 4; k++ ) {
+    der_qop[k] *= PMIN;
+    der_tx[k] /= Dtxy;
+    der_ty[k] /= Dtxy;
+  }
+  // from straight line
+  der_tx[0] += zf - zi;
+  der_ty[1] += zf - zi;
+  der_tx[2] += 1;
+  der_ty[3] += 1;
+
+  if ( m_qop_flip ) {
+    der_qop[0] = -der_qop[0];
+    der_qop[1] = -der_qop[1];
+    der_qop[2] = -der_qop[2];
+    der_qop[3] = -der_qop[3];
+  }
+
+  return 1;
+}

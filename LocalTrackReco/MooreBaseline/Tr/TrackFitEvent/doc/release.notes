@@ -1,0 +1,762 @@
+!-----------------------------------------------------------------------------
+! Package     : Tr/TrackFitEvent
+! Responsible : Wouter Hulsbergen
+! Purpose     : Package for the tracking fitting-related classes
+!-----------------------------------------------------------------------------
+
+! 2016-12-14 - Jeroen van Tilburg
+ - Adapt to new FT geometry and numbering scheme
+
+!========================= TrackFitEvent v6r6 2016-01-28 =========================
+! 2015-12-05 - Gerhard Raven
+ - reduce mention of 'static' and 'std::auto_ptr' 
+
+!========================= TrackFitEvent v6r5 2015-01-14 =========================
+! 2015-01-12 - Gerhard Raven
+ - FitNode: use vectorized filter in computeFilteredState
+
+! 2015-01-07 - Gerhard Raven
+ - FitNode: use vectorized average in computeBiSmoothedState
+
+! 2015-01-06 - Gerhard Raven
+ - FitNode: use vectorized similarity to compute residual.
+ - KalmanFitResult: introduce covariant return type on clone,
+   clean up loop
+   
+
+! 2015-01-04 - Gerhard Raven
+ - FitNode: speed up transport by a further factor of 2 by using vectorized
+   version of the similarity transforms from LHCbMath.
+
+! 2014-12-29 - Gerhard Raven
+ - FitNode: speed up transport of covariance matrix by a factor of 2 by 
+   just spelling out the entire 5x5 similarity transform....
+
+!========================= TrackFitEvent v6r4 2014-12-11 =========================
+! 2014-12-09 - Marco Cattaneo
+ - FitNode.cpp: remove unused function ::transportVector to
+                silence gcc49 warning
+
+! 2014-12-03 - Wouter Hulsbergen
+ - small change to OTMeasurement to make sure it also works for trajectories
+   other than LineTraj
+
+!========================= TrackFitEvent v6r3 2014-09-08 ========================
+! 2014-08-20 - Wouter Hulsbergen
+ - added method to KalmanFitResult to count number of active hits of given type
+ - fixed (inconsequential) bug in FitNode smoother
+
+!========================= TrackFitEvent v6r2 2014-07-14 ========================
+! 2014-06-12 - Heinrich Schindler
+ - VPMeasurement: modify constructor, passing PixelPositionInfo directly 
+   instead of cluster position tool.
+
+!========================= TrackFitEvent v6r1 2014-05-13 ========================
+! 2014-04-01 - Heinrich Schindler
+ - Remove VPLiteMeasurement
+
+! 2014-03-26 - Heinrich Schindler
+ - Add VPMeasurement
+
+! 2014-03-19 - Michel De Cian
+ - Adapted FTMeasurement to work with FTLiteClusters
+
+! 2014-03-18 - Francesco Polci
+ - Removed bilayer code from FTMeasurement.cpp
+
+
+!========================= TrackFitEvent v6r0 2014-02-19 ========================
+! 2014-01-13 - Marco Cattaneo
+ - Remove VL measurement types
+
+!========================= TrackFitEvent v5r24 2013-10-01 =======================
+! 2013-09-09 - Heinrich Schindler
+ - Follow VP detector element and channel ID changes (r162190, 162191) 
+! 2013-08-23 Heinrich Schindler
+ - Remove calls to DeVPSquareType
+
+!========================= TrackFitEvent v5r23 2013-07-24 =======================
+! 2013-07-24 - Francesco Polci
+ - Added a switch between old and new detector geometry needed in FTMeasurement.cpp
+
+!========================= TrackFitEvent v5r22 2013-04-30 =======================
+! 2013-04-15 - Marco Cattaneo and Wouter Hulsbergen
+ - Add dependency on Tr/TrackKernel, needed by previous change
+
+! 2013-04-11 - Wouter Hulsbergen
+ - removed spurious factor 2 in VPLite error
+ - added new measurement class OriginConstraint
+
+! 2013-03-25 - Wouter Hulsbergen
+ - Fixed small bug in STMeasurement: measurement type set incorrectly for UT.
+
+!========================= TrackFitEvent v5r21 2013-03-22 =======================
+! 2013-03-13 - Heinrich Schindler
+ - Cleanup of VL measurements. 
+
+!========================= TrackFitEvent v5r20 2013-02-14 =======================
+! 2013-02-01 - Sascha Stahl
+ - Added VL measurements. Copy from Velo measurements.
+
+! 2013-01-28 - Wouter Hulsbergen
+ - fixed bug in VPLiteMeasurement leading to bias in x position
+
+! 2013-01-07 - Jianchun Wang
+ - Add UT cluster as one of the ST clusters
+
+! 2012-12-21 - Marco Clemencic
+ - Fixed compilation with CMake.
+
+! 2012-12-20 - Marco Clemencic
+ - Fixed compilation with CMake.
+
+! 2012-12-04 - Heinrich Schindler
+ - Add VLMeasurement
+
+! 2012-11-29 - Olivier Callot
+ - Add FTMeasurements (.xml, .cpp)
+
+!========================= TrackFitEvent v5r19 2012-11-28 =======================
+! 2012-11-23 - Marco Clemencic
+ - Added CMake configuration file.
+
+!========================= TrackFitEvent v5r18 2012-10-01 =======================
+! 20120-09-20 - Paul Szczypka
+ - VeloPix to VP renaming
+
+!========================= TrackFitEvent v5r17 2012-07-24 =======================
+! 2012-07-23 - Wouter Hulsbergen
+- added method to KalmanFitResult to compute number of active OTTimes and chi2
+  contribution of TT hits
+
+!========================= TrackFitEvent v5r16 2012-03-27 =======================
+! 2012-03-22 - Wouter Hulsbergen
+- implemented faster method to invert transport matrix
+- exploit emptiness of transport matrix in zero B field
+
+!========================= TrackFitEvent v5r15 2012-03-17 =======================
+! 2012-03-16 - Wouter Hulsbergen 
+- bug fix in filter logic: backward state could be in state 'smoothed'
+  without having gone through 'filtered'. a real fix requires
+  decoupling the smooth state from the filter.
+
+!========================= TrackFitEvent v5r14 2012-02-28 =======================
+! 2012-02-22 - Wouter Hulsbergen
+ - adapt KalmanFitResult and FitNode to change in Measurement
+
+! 2012-02-02 - Wouter Hulsbergen
+ - improve speed of FitNode::computeFilteredState
+
+!========================= TrackFitEvent v5r13 2012-01-31 =======================
+! 2012-01-25 - Wouter Hulsbergen
+ - fix problem in reinterpret_cast that only appears in optimization in kalmanfitresult
+
+! 2012-01-09 - Wouter Hulsbergen
+ - make sure chi2 cache of trackfitresult is invalidated if a measurement is deactivated
+ - add total accumulated chi2 of filter to node. use this in kalmanfitresult
+ - add ranges to fitnodes in kalmanfitresult
+
+!========================= TrackFitEvent v5r12 2011-11-08 =======================
+! 2011-10-17 - Victor Coco
+ - FitNode.h: protect against NULL pointer in computeClassicalSmoothedState
+              (coverity defect 19662)
+
+! 2011-10-13 - Marco Cattaneo
+ - FitNode.h: remove obsolete member variable, fixes coverity defects
+              19690, 19691, 19692
+
+!========================= TrackFitEvent v5r11 2011-07-28 =======================
+! 2011-06-20 - Alexandr Kozlinskiy
+ - Use trajector.endRange/beginRange instead of module().wireLingth
+   to improve performance.
+
+!========================= TrackFitEvent v5r10 2011-06-15 =======================
+! 2011-05-18 - Alexandr Kozlinskiy
+ - Move code from DeOTModule::propagationTime to OTMeasurement::driftTime to
+   improve performance
+
+! 2011-05-16 - Alexandr Kozlinskiy
+ - Change OTMeasurement::driftTime and OTMeasurement::driftTimeFromY
+   to use DeOTModule::propagationTime and DeOTModule::propagationTimeFromY
+
+! 2011-05-02 - Wouter Hulsbergen
+ - Fix remaining missing fields in KalmanFitResult copy constructor
+
+!========================= TrackFitEvent v5r9 2011-04-27 ========================
+! 2011-04-15 - Victor Coco
+ - Fix KalmanFitResult copy constructor from a KalmanFitResult 
+
+! 2011-04-08 - Victor Coco
+ - Fix some initialised variables in constructor of FitNode, KalmanFitResult,
+   MuonMeasurements and VeloPixMeasurements
+
+!========================= TrackFitEvent v5r8 2011-04-05 ========================
+! 2011-04-04 - Victor Coco
+ - put the check for negative element in the state covariance matrix diagonal only
+   in the smoothing step. 
+	 Update the error types of KalmanFitResult accordingly
+
+! 2011-04-03 - Victor Coco
+ - add a check for negative element in the state covariance matrix diagonal in FitNode
+
+!========================= TrackFitEvent v5r7 2011-02-28 ========================
+! 2011-02-24 - Wouter Hulsbergen
+ - bug fix in FitNode: was always putting fit in error mode for classical smoother
+
+! 2011-02-20 - Wouter Hulsbergen
+ - added missing consts in KalmanFitResult
+
+! 2011-02-04 - Victor Coco
+ - fix windows warning (unsigned short instead of ushort)
+
+!========================= TrackFitEvent v5r6 2011-02-02 ========================
+! 2011-02-02 - Victor Coco
+ - remove debug std::cout from FitNode Filter.
+
+! 2011-02-01 - Victor Coco
+ - correct classical smoother call
+
+! 2011-01-31 - Victor Coco
+ - removing assert from FitNode + clean and add comments
+
+! 2011-01-28 - Wouter Hulsbergen
+ - bug fix in dealing with smoothed status in FitNode::resetFilterStatus
+
+! 2011-01-23 - Wouter Hulsbergen
+ - optimization in prediction, filter and smoother
+
+! 2011-01-20 - Victor Coco
+ - Add triangular matrix similarity comutation in TrinagularInversion namespace
+   use it in predict step in FitNode + little bug fix in the error masks of
+   KalmanFitResult
+
+! 2011-01-20 - Victor Coco
+ - Add TrinagularInversion namespace, switch inversion of transport matrix to fast inversion
+
+! 2011-01-19 - Victor Coco
+ - Modification to the KalmanFitResult to store errors from the FitNode computation
+ 
+! 2011-01-17 - Wouter Hulsbergen & Victor Coco
+ - Major modification: all the logic of the fitter is passed in FitNode to allow
+   on demand computation.
+
+!========================= TrackFitEvent v5r5 2011-01-17 ========================
+! 2010-12-21 - Victor Coco
+ - FitNode: cache the inverse transport matrix when transport matrix is created
+
+=========================== TrackFitEvent v5r3 2010-08-25 ==================
+! 2010-08-17 - Wouter Hulsbergen
+ - fixed bug in KalmanFitResult cache introduced in v5r2
+
+=========================== TrackFitEvent v5r2 2010-07-26 ==================
+! 2010-07-22 - Wouter Hulsbergen
+ - added filtered states to FitNode
+ - added boost allocator to FitNode
+ - protected KalmanFitResult::computeChi2 against tracks with zero nodes
+
+=========================== TrackFitEvent v5r1 2010-07-20 ==================
+! 2010-07-15 - Jeroen VAN TILBURG
+ - Changed include location of ISTClusterPosition (now in Tr/TrackInterfaces).
+
+=========================== TrackFitEvent v5r0 2010-06-21 ==================
+! 2010-06-16 - Rob Lambert
+ - Changed type of OTMeasurement::deltaTimeOfFlight from float to double
+
+=========================== TrackFitEvent v4r6 2010-04-26 ====================
+! 2010-04-13 - Victor Coco
+ - added VeloPixLiteMeasurment class to deal with pixel measurment for upgraded
+ vertex locator. 
+
+=========================== TrackFitEvent v4r5 2010-03-19 ====================
+! 2010-03-19 - Wouter Hulsbergen
+ - added ChiSquare::prob
+
+! 2010-03-18 - Victor Coco
+ - added velopix switch case in KalmanFitResult 
+
+!========================== TrackFitEvent v4r4 2010-02-15 ====================
+
+! 2010-02-14 Wouter Hulsbergen
+ - added flag for use of driftttime to OTMeasurement
+
+! 2010-02-01 Wouter Hulsbergen
+ - added muon chisquare to KalmanFitResult
+
+!========================== TrackFitEvent v4r3 2009-12-11 ====================
+! 2009-12-07 Wouter Hulsbergen
+ - removed default constructors for measurement classes
+ - added class Chisquare to hold chisquare plus dof
+ - added functionality to KalmanFitResult to compute segment/match chisquares
+
+!========================== TrackFitEvent v4r2 2009-11-13 ====================
+! 2009-11-11 Wouter Hulsbergen
+ - added new class KalmanFitResult which derives from TrackFtResults but also holds Kalman specific info
+
+!========================== TrackFitEvent v4r1 2009-10-20 ====================
+! 2009-09-25 Wouter Hulsbergen
+ - added data member 'doca' to fitnode.
+
+!========================== TrackFitEvent v4r0 2009-07-14 ====================
+! 2009-07-10 Wouter Hulsbergen
+ - add constructor with State::Location to FitNode
+
+! 2009-07-08 Wouter Hulsbergen
+ - moved non-event model classes to TrackKernel
+
+!========================== TrackFitEvent v3r23 2009-06-30 ===================
+! 2009-06-29 Wouter Hulsbergen
+ - remove forgotten std::cout from TrackStateVertex
+
+! 2009-06-23 Wouter Hulsbergen
+ - added some more classes to dictionary
+
+!========================== TrackFitEvent v3r22 2009-06-17 ===================
+! 2009-06-12 Wouter Hulsbergen
+ - added function for mass constraint to TrackStateVertex for use in alignment
+
+!========================== TrackFitEvent v3r21p1 2009-06-03 =================
+! 2009-06-03 - Marco Cattaneo
+ - In StateTraj.h: 
+   add temporary workaround for windows: define NOMINMAX when including
+   GaudiKernel/boost_allocator.h, to avoid conflict with max() macro 
+   defined in windows.h. This will become unnecessary with Gaudi v21r2
+
+!========================== TrackFitEvent v3r21 2009-05-08 ===================
+! 2009-04-16 Wouter Hulsbergen
+ - added accessor to matrix A and B in TrackStateVertex
+
+! 2009-04-06 Jose A. Hernando
+ - in src/MuonMeasurement.cpp x,y 
+   x-type, measures x, error = x-size/sqrt(12), j-vector trajectory, range +- y-size/2 
+
+!========================== TrackFitEvent v3r20 2009-02-20 ===================
+! 2009-01-20 David Hutchcroft
+ - Added xml/VeloLiteMeasurement.xml missed in first update
+
+! 2009-01-19 David Hutchcroft
+ - Added Velo "Lite" measurements
+
+! 2009-01-19 M Needham
+ - Cluster size method for STMeasurement now returns value
+   given by STPositionTool [was value from cluster]
+
+!========================== TrackFitEvent v3r19 2008-11-21 ===================
+! 2008-11-17 M Needham
+  - Fix warning in OTMeasurement constructor [module should be passed to base class]
+
+! 2008-11-14 M Needham
+ - Add common base class to the VeloMeasurement classes
+   * Lots of new functionality
+ - Replace sqrt(12) in MuonMeasurement with constant from LHCbMath
+ - Remove un-needed module member from OT class
+
+! 2008-11-09 M Needham
+ - Add totalCharge member to velo measurement classes  
+
+! 2008-11-05 M Needham
+ - Improvements to STMeasurement and STLiteMeasurement classes
+
+! 2008-11-05 M Needham
+ - Unify STLiteMeasurement and STMeasurement classes
+ - Add functionality to STMeasurement classes
+
+! 2008-11-04 M Needham
+ - Add first implemention of STLiteMeasurement
+ - clean up init of STMeasurement
+
+!========================== TrackFitEvent v3r18 2008-10-06 ===================
+! 2008-10-06 - Wouter Hulsbergen
+ - Add driftTime function to OTMeasurement
+
+! 2008-10-06 - Marco Cattaneo
+ - Fix memory leak in TrackStateVertex.cpp
+
+! 2008-09-26 - Marco Cattaneo
+ - Use GOD_NOALLOC flag to switch off custom allocators
+
+! 2008-09-15 - Wouter Hulsbergen
+ - added 'pocaVector' to fitnode
+
+!========================== TrackFitEvent v3r17 2008-07-29 ===================
+! 2008-07-24 - Wouter Hulsbergen
+ - two changes to FitNode:
+   - added smoother gain matrix to fitnode for use in alignment
+   - renamed Upstream->Forward, Downstream->Backward (less confusing and less code)
+
+!========================== TrackFitEvent v3r16 2008-07-02 ===================
+! 2008-06-17 - Louis Nicolas
+ - Added initialization of deltaEnergy variable to 0 in FitNode
+
+!========================== TrackFitEvent v3r15 2008-05-28 ===================
+! 2008-05-28 Stephanie Hansmann-Menzemer
+ - fixed problem with float double conversion
+
+! 2008-05-27 Wouter Hulsbergen
+ - Added fit-status flag to TrackStateVertex
+ - Added method to get propagation time to OTMeasurement
+
+!========================== TrackFitEvent v3r14 2008-04-30 ===================
+! 2008-04-30 M Needham
+ - Change STMeasurement to prevent crash in init due to 0 pointer for sensor 
+
+! 2008-04-22 - Wouter Hulsbergen
+ - Fixed bug in MuonMeasurement
+
+! 2008-04-18 M Needham 
+ - Update to changes in STDet to add sensor level
+
+!========================== TrackFitEvent v3r13 2008-03-27 ===================
+! 2008-03-27 - Wouter Hulsbergen
+ - Added new class TrackStateVertex, holds the result of a multi-track vertex fit
+
+!========================== TrackFitEvent v3r12 2008-02-27 ===================
+! 2008-02-27 - Chris Jones
+ - Add a few missing STL includes
+
+! 2008-02-07 - Marco Cattaneo
+ - Clean up public includes, using new GaudiObjDesc forward declaration possibilities
+
+! 2008-02-04 - Wouter Hulsbergen
+ - Added pointer to detector element to Measurement classes
+
+!========================== TrackFitEvent v3r11 2007-12-10 ===================
+! 2007-12-10 - Wouter Hulsbergen
+  - bug fixed in TrackTraj constructor and caching
+  - added new method to obtain driftRadius in OTMeasurement (for use in panoramix)
+  - added member for material energy loss to FitNode
+
+! 2007-11-30 - Wouter Hulsbergen
+  - added new trajectory interface class 'ZTrajectory'
+  - replaced OTTime by OTLiteTime in OTMeasurement; added access to calibration
+  - adapted to movement of refvector from Measurement to Node
+
+! 2007-11-29 - Marco Cattaneo
+ - Adapt to new location of IVeloClusterPosition.h, in TrackInterfaces
+
+!========================== TrackFitEvent v3r10 2007-11-09 ===================
+! 2007-11-09 - Marco Cattaneo
+ - Fix dependencies for building dictionaries
+
+! 2007-10-12 - Wouter Hulsbergen
+- adapted trajectories to change in Trajectory interface
+- added TrackTraj, StateZTraj, CubicStateVectorInterpolationTraj,
+        CubicStateInterpolationTraj
+
+!========================== TrackFitEvent v3r9 2007-10-04 ====================
+! 2007-09-25 - Wouter Hulsbergen
+- added constructor from StateVector to StateTraj
+- replaced 'projectionTerm' by residual of reference in FitNode
+
+!========================== TrackFitEvent v3r8 2007-09-18 ====================
+! 2007-09-04 - Wouter Hulsbergen
+- changes to FitNode
+  - removed cached unbiased residual. replaced with calculation on the fly
+  - added fields for chisquare contribution of upstream and downstream fit
+  - implemented missing clone method
+  - initialized all data members in constructors
+
+! 2007-08-23 - Wouter Hulsbergen
+- added calculation of unbiased state
+
+!========================== TrackFitEvent v3r7 2007-07-23 ====================
+! 2007-07-23 - Marco Cattaneo
+ - Fixed a doxygen warning
+
+! 2007-07-23 - Silvia Pozzi and Wouter Hulsbergen
+- changed MuonMeasurements to single trajectory 
+
+!========================== TrackFitEvent v3r6 2007-06-25 ====================
+! 2007-06-25 - Marco Cattaneo
+ - Put back Gaudi:: namespace in StateTraj.cpp method calling sequences, 
+   needed to please doxygen (expects .h and .cpp to be the same)
+
+! 2007-06-22 - Edwin Bos
+ - Replaced TrackParameters::kappa with c_light as in the extrapolators.
+
+!========================== TrackFitEvent v3r5 2007-06-11 ====================
+! 2007-06-11 - Marco Cattaneo
+ - Adapted requirements to new GaudiObjDesc v10r0 patterns
+
+! 2007-06-06 - Wouter Hulsbergen
+ - made init calls in OT,ST,Velo public for use in MeasurementCreator
+ - added support for calling velo position tool with reference vector
+ - added some missing consts in STMeasurement
+
+!========================== TrackFitEvent v3r4 2007-05-18 ====================
+! 2007-05-18 - Marco Cattaneo
+ - Fix compilation warning in MuonMeasurement.h
+
+! 2007-04-27 - Jose Hernando, Miriam Gandelman, Erica Polycarpo
+  - Create MuonMeasurement.xml 
+
+!========================== TrackFitEvent v3r3 2007-04-17 ====================
+! 2007-04-17 - Gerhard Raven
+  - Add LineDifTraj class to parameterize lines which are roughly parallel to
+    the z-axis
+
+! 2007-04-10 - Gerhard Raven
+ - Add an operator+= to StateTraj because of an extension of the DifTraj
+   interface
+
+! 2007-03-29 - Marco Cattaneo
+ - Fix doxygen warnings
+
+! 2007-03-22 - David Hutchcroft
+ - Modfied VeloPhiMeasurement to work with new VeloDet interface
+
+!========================== TrackFitEvent v3r2 2007-03-05 ====================
+! 2007-03-05 - Marco Cattaneo
+ - Add no_auto_imports to use GaudiObjDesc, to avoid getting a dependency on
+   python in the TrackFitEvent link library
+ - Remove obsolete TrackFitEvent_load.cpp file
+
+!========================== TrackFitEvent v3r1 2007-02-05 ====================
+! 2007-02-05 - Marco Cattaneo
+ - Remove rootmap for Dict library
+
+! 2007-01-26 M Needham
+ - Temp fix in STMeasurement to make sure correct strip 
+   is used for the trajectory calculation 
+
+!========================== TrackFitEvent v3r0 2006-12-18 ====================
+! 2006-12-18 - Marco Cattaneo
+ - replace include_dirs with apply_pattern install_more_includes
+ - get TrackTypes.h from TrackEvent and remove LHCbDefinitions dependency
+
+!========================== TrackFitEvent v2r8 2006-12-06 ====================
+! 2006-12-06 - Gerhard Raven
+ - add implementation of the new 'parameters' function in StateTraj which 
+   is now required by DifTraj (pure virtual!)
+
+!========================== TrackFitEvent v2r7 2006-11-30 ====================
+! 2006-11-30 - David Hutchcroft
+ - Bug fix to the phi trajectory offset
+
+! 2006-11-29 - David Hutchcroft
+ - Changed VeloRMeasurement and VeloPhiMeasurement to use offline cluster 
+   centroid calculation in trajectory
+
+! 2006-11-17 - Jeroen VAN TILBURG
+ - FitNode: Renamed predictedStateRev to predictedStateDown and predictedState
+   to predictedStateUp.
+
+!========================== TrackFitEvent v2r6 2006-11-07 ====================
+! 2006-10-20 - Jeroen VAN TILBURG
+ - Added unbiasedResidual and errUnbiasedResidual to FitNode.
+ - Renamed biState to predictedStateRev (rev stands for reverse fit) in FitNode.
+
+!========================== TrackFitEvent v2r5 2006-07-24 ====================
+! 2006-07-21 - Eduardo Rodrigues
+ - added creation of dictionary for FitNode class
+
+! 2006-07-10 M. Needham
+ - provide boost allocators for StateTraj class
+
+!========================== TrackFitEvent v2r4 2006-06-21 ====================
+! 2006-06-19 - Jeroen Van Tilburg
+ - Add biState to the FitNode. Needed for the bidirectional fit.
+
+! 2006-06-13 - Matt Needham
+ - fix memory leak in node
+
+! 2006-05-19 - Eduardo Rodrigues
+ - "using namespace ..." removed from header files
+ - unnecessary update method removed from STMeasurement
+
+!========================== TrackFitEvent v2r3 2006-05-16 ====================
+! 2006-05-16 - Marco Cattaneo
+ - Move include of PhysicalConstants.h from StateTraj.h to .cpp
+
+! 2006-05-08 - Eduardo Rodrigues
+ - fixed typo in method name in FitNode.h
+
+!========================== TrackFitEvent v2r2 2006-05-03 ====================
+! 2006-05-02 - Eduardo Rodrigues
+ - propagation of the renaming of the Track Event Model typedefs
+   (in TrackTypes.h in Kernel/LHCbDefinitions)
+
+! 2006-04-25 - Eduardo Rodrigues
+ - bug fix in constructor of VeloRMeasurement
+
+!========================== TrackFitEvent v2r1 2006-04-20 ====================
+! 2006-04-20 - Marco Cattaneo
+ - Remove unnecessary cmt/fragments, these are picked up from LHCbKernel
+
+! 2006-04-19 - Eduardo Rodrigues
+ - added creation of dictionary for StateTraj class (-> available in Python)
+
+! 2006-04-18 - Jeroen van Tilburg
+ - Removed obsolete update method in FitNode.
+ - Added boolean flag to check whether the transport parameters are set.
+   Removed old delta z check.
+
+! 2006-04-12 - Mark Tobin
+ - Adapted VeloPhiMeasurement and VeloRMeasurement to work with trajectory
+   change in VeloDet
+
+! 2006-04-06 - Edwin Bos
+ - moved range() to baseclass, updated constuctor initializationlist
+
+! 2006-04-06 - David Hutchcroft
+ - Changed VeloPhiMeasurement and VeloRMeasurement to match new format 
+   for measurements
+
+! 2006-04-04 - Juan Palacios (Jan Amoraal changes)
+ - OTMeasurement.cpp: Adapt to new OTDet interface and include DeOTModule.h
+
+! 2006-03-31 - Jeroen van Tilburg
+ - Changed VeloPhiMeasurement to take the new arguments from the resolution
+   method.
+
+! 2006-03-29 - Eduardo Rodrigues
+ - correct handling of trajectories in clone methods of XxxMeasurement
+
+! 2006-03-26 - Eduardo Rodrigues
+ - adaptations to new SMatrix-5.10.00b and higher
+
+!========================== TrackFitEvent v2r0 2006-03-23 ====================
+! 2006-03-23 - Mark Tobin
+ - Modified to work with new VeloDet interface
+
+! 2006-03-17 - Eduardo Rodrigues
+ - kappa const now in TrackParameters
+
+! 2006-03-08 - Eduardo Rodrigues
+ - removed TrajMeasurement class - no more needed
+
+! 2006-02-28 M Needham
+ - update STMeasurement to new interface
+
+! 2006-02-27 - Jeroen van Tilburg
+ - Created constructors for the reference vectors.
+ - Fill m_trajectory in the derived Measurement classes.
+
+! 2006-02-22 - Eduardo Rodrigues
+ - added new class TrajMeasurement: a Measurement supplemented with
+   a Trajectory
+
+! 2006-02-21 - David Hutchcroft
+ - Updated VeloRMeasurement and VeloPhiMeasurement to work with new 
+   VeloClusters
+
+! 2006-02-20 - Jeroen van Tilburg
+ - OTMeasurement.cpp: Moved from time to distance domain.
+
+! 2006-02-16 - Eduardo Rodrigues
+ - XxxMeasurement constructors now passed const info
+   (this needed some hacks to the XML - to be improved with GOD ...)
+
+! 2006-02-15 - Marco Cattaneo
+ - Migrate requirements to DigiEvent
+
+! 2006-02-13 - Gerhard Raven
+ - Update StateTraj to follow changes in LHCbKernel
+
+! 2006-02-13 - Marco Cattaneo
+ - Remove unneccessary dependency on STTools
+
+! 2006-02-10 - Gerhard Raven & Edwin Bos
+ - update StateTraj to follow changes in LHCbKernel
+
+! 2006-02-08 - Eduardo Rodrigues
+ - introduced LHCb namespace in StateTraj class
+   and made it inherit from DifTraj instead of Trajectory
+ - corrected bugs in migration of FitNode
+ - put back default values in constructors of XxxMeasurement classes
+
+! 2006-02-03 - Edwin Bos
+ - Moved to LHCb v20r0 & updated the code to comply with latest Det packages
+ - and G.O.D.'s xml conventions
+
+!========================== TrackFitEvent v1r5 2006-01-27 ====================
+! 2006-01-17 - Edwin Bos, Jeroen van Tilburg, Eduardo Rodrigues
+ - Added StateTraj for creating a Trajectory from a State.
+ - Added function to get referenceVector from OTMeasurement.
+
+! 2005-12-13 - Eduardo Rodrigues
+ - ITMeasurement class renamed to STMeasurement. Its type can be TT or IT
+
+! 2005-12-01 - Eduardo Rodrigues
+ - IT measurement value and error calculated via the STClusterPosition tool
+
+!========================== TrackFitEvent v1r5 2005-11-28 ====================
+! 2005-11-21 - Jeroen van Tilburg
+ - VeloPhiMeasurement: Added data member m_r, which is an estimate or
+   r needed to determine the error in Carthesian coordinates. This error is
+   returned by the new method resolution(). The old method errMeasure()
+   returns the error in terms of the phi angle.
+ - FitNode: Add data member m_transportDeltaZ in order to be able to
+   cross check whether the transport data is still correct. Removed obsolete
+   data member filtered state. Data member m_predictedState is not a pointer
+   anymore.
+
+!========================== TrackFitEvent v1r4 2005-11-16 ====================
+! 2005-11-16 - Marco Cattaneo
+ - Fix for Reflex dictionaries with GaudiObjDesc v8r3
+
+! 2005-11-03 - Eduardo Rodrigues
+ - it++ replaced by ++it
+
+! 2005-10-19 - Eduardo Rodrigues
+ - method name change in FitNode
+
+!========================== TrackFitEvent v1r3 2005-10-06 ====================
+! 2005-09-27 - Eduardo Rodrigues
+ - method to update measurements parameters (useful for Kalman fit)
+   implemented (relevant for OT and VeloR measurements)
+
+!========================== TrackFitEvent v1r2 2005-07-20 ====================
+! 2005-07-01 - Eduardo Rodrigues
+ - clean-up of debugging statements
+
+! 2005-06-29 - Eduardo Rodrigues
+ - minor additions to FitNode
+ - corrected assignment of ambiguity in constructor of OTMeasurement
+
+!========================== TrackFitEvent v1r1 2005-06-24 ====================
+! 2005-06-15 - Eduardo Rodrigues
+ - type of measurement set in the constructor
+ - ambiguity of OTMeasurement set also in the corresponding LHCbID
+
+!========================== TrackFitEvent v1r0 2005-05-26 ====================
+! 2005-05-26 - Marco Cattaneo
+ - Add TrFitEvent_load.cpp
+
+! 2005-05-24 - Eduardo Rodrigues
+ - MeasurementProvider tool moved to Tr/TrackTools
+
+! 2005-05-23 - Eduardo Rodrigues
+ - propagating changes from TrackEvent to TrackFitEvent
+
+! 2005-05-17 - Eduardo Rodrigues
+ - propagating changes from TrackEvent to TrackFitEvent
+ - MeasurementProvider no more stores the Measurements in the TES
+
+! 2005-05-13 - Eduardo Rodrigues
+ - setLhcbID method added to the XxxMeasurement constructors
+
+! 2005-05-12 - Eduardo Rodrigues
+ - MeasurementFunctor removed. A templated Functor for Measurements and
+   States was added to Event/TrackEvent
+
+! 2005-04-15 - Eduardo Rodrigues
+ - FitNode class added (adaptation of TrNode in TrFitter)
+ - MeasurementFunctor adapted to use Track and not FitTrack
+
+! 2005-04-13 - Jose A Hernando
+ - MeasurementProvider.h/cpp working in a tool that create Measurements from LHCbID (tentative)
+
+! 2005-04-13 - Eduardo Rodrigues
+ - FitTrack removed from the package. Extra functionality with respect to
+  "old" Track was moved to it
+
+! 2005-04-07 - Jose Hernando, Eduardo Rodrigues
+ - classes ITMeasurement, OTMeasurement, VeloRMeasurement, VeloPhiMeasurement added
+ - functionality added to FitTrack
+
+! 2005-04-05 - Eduardo Rodrigues
+ - MeasurementFunctor added
+
+! 2005-03-29 - Jose Hernando, Eduardo Rodrigues
+ - creation of the package. It contains for the moment the class
+   FitTrack inheriting from Track

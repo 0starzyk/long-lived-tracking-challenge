@@ -1,0 +1,160 @@
+!-----------------------------------------------------------------------------
+! Package     : Tr/TrackKernel
+! Responsible : Wouter Hulsbergen
+! Purpose     : 
+!-----------------------------------------------------------------------------
+
+!========================= TrackKernel v3r1 2016-04-13 =========================
+! 2016-04-13 - Wouter Hulsbergen
+ - optimization of cov transport in CubicStateInterpolationTraj
+ - added option to add track with weight in TrackStateVertex
+
+!========================= TrackKernel v3r0 2016-01-28 =========================
+! 2016-01-03 - Gerhard Raven
+ - major change: follow substitution of std::unique_ptr in favor of  std::auto_ptr 
+   in Kernel/LHCbKernel
+
+!========================= TrackKernel v2r4 2015-11-23 =========================
+! 2015-11-08 - Gerhard Raven
+ - remove static 
+
+!========================= TrackKernel v2r3 2015-04-21 =========================
+! 2015-02-26 - Manuel Tobias Schiller
+ - CubicStateInterpolationTraj: make distTo2ndError a factor 5 faster
+
+!========================= TrackKernel v2r2 2015-02-23 =========================
+! 2015-02-18 - Chris Jones
+ - Replace use of ROOT::Math::Similarity with new faster vectorised
+   LHCb::Math::Similarity in CubicStateInterpolationTraj.
+
+!========================= TrackKernel v2r1 2014-12-11 =========================
+! 2014-11-20 - Manuel Tobias Schiller
+ - rewrite TrackCloneData class:
+   * use Bloom filter to quickly check for non-overlapping tracks (use old
+     method to determine size of overlap if overlap might be non-emptr); this
+     option will give exactly the same result as previous code in all cases
+     (default)
+   * option to do the entire overlap calculation with size estimate of Bloom
+     filter class - slightly faster, but will cause permille level differences
+     (selectable with template argument, but not default)
+   * template argumentument to allow choice between owning the contained pointer
+     to the underlying track (default) or not owning it
+
+!========================= TrackKernel v2r0 2014-02-19 =========================
+! 2014-01-13 - Marco Cattaneo
+ - Remove support for VL
+
+!========================= TrackKernel v1r18 2013-10-24 ========================
+! 2013-10-11 - Wouter Hulsbergen
+ - Improved speed of TrackStateVertex
+
+!========================= TrackKernel v1r17 2013-10-01 ========================
+! 2013-08-13 - Wouter Hulsbergen
+ - Improved error handling of TrackStateVertex
+ - Changed weights of adaptive fit
+
+!========================= TrackKernel v1r16 2013-07-18 ========================
+! 2013-06-21 - Wouter Hulsbergen
+ - Added fast methods to compute ipchi2, twotrackchi2 and doca to TrackVertexUtils
+ - Added constructor that takes two states to TrackStateVertex
+
+! 2013-06-14 - Marco Cattaneo
+ - Replace use of obsolete wrapper class Gaudi::Math::invertPosDefSymMatrix
+   with direct call to SMatrix InvertChol() method. Fixes gcc48 warning
+
+!========================= TrackKernel v1r15 2013-06-03 ========================
+! 2013-05-28 - Wouter Hulsbergen
+ - Fixed old bug in LHCb::TrackTraj::distTo1stError and
+   LHCb::TrackTraj::distTo2ndError, exposed by previous commit.
+
+! 2013-05-17 - Chris Jones
+ - Fix operator precedence order issue for ? and + in 
+   LHCb::TrackTraj::distTo1stError and LHCb::TrackTraj::distTo2ndError
+
+!========================= TrackKernel v1r14 2013-04-30 ========================
+! 2013-04-30 - Sascha Stahl
+ - Bugfix for VL.
+
+!========================= TrackKernel v1r13 2013-04-29 ========================
+! 2013-04-05 - Wouter Hulsbergen
+ - TrackCloneData: bug fixes + adapted for upgrade
+
+! 2013-04-02 - Marco Cattaneo
+ - Fix PW.PARAMETER_HIDDEN Coverity defect
+
+!========================= TrackKernel v1r12 2013-02-04 ========================
+! 2012-12-12 - Marco Cattaneo
+ - Add include dependency on DetDesc, introduced by previous change
+   (ideally, DetDesc/StaticArray.h should be moved to e.g. GaudiKernel)
+
+! 2012-12-11 - Wouter Hulsbergen
+ - Added TrackCloneData
+
+!========================= TrackKernel v1r11 2012-11-26 ========================
+! 2012-11-21 - Marco Clemencic
+ - Fixed a warning (-pedantic).
+
+! 2012-11-15 - Marco Clemencic
+ - Added CMake configuration file.
+
+!========================= TrackKernel v1r10 2012-06-25 ========================
+! 2012-06-21 - Wouter Hulsbergen
+ - Added adaptive fit to TrackStateVertex
+
+! 2012-06-14 - Wouter Hulsbergen
+ - Added utility class TrajVertex
+
+! 2012-06-04 - Wouter Hulsbergen
+ - Two changes to TrackStateVertex:
+   - now copies input states rather than keeping pointers
+   - particles with negative masshypo will be ignored for p4
+
+!========================= TrackKernel v1r9p1 2012-03-27 =======================
+! 2012-03-27 - Wouter Hulsbergen
+ - bug fix in TrackTraj: Backward tracks have states in opposite order
+
+!========================= TrackKernel v1r9 2012-02-28 =========================
+! 2012-02-16 - Wouter Hulsbergen
+ - add functionality to vertex a track with an existing vertex to TrackStateVertex
+
+!========================= TrackKernel v1r8 2011-09-19 =========================
+! 2011-09-19 - Maurizio Martinelli
+ - Modified 'constrainMass' in TrackStateVertex to consider the natural width of
+   the mother in the fit.
+
+!========================= TrackKernel v1r7 2011-02-22 =========================
+! 2011-02-08 - Wouter Hulsbergen
+ - Initialize unitialized variables in default constructors of CubicStateInterpolationTraj and 
+CubicStateVectorInterpolationTraj
+
+!========================= TrackKernel v1r6 2011-01-31 =========================
+! 2011-01-11 - Marco Cattaneo
+ - Fix icc compiler warnings and remarks
+
+!========================== TrackKernel v1r5 2010-08-25 ===================
+! 2010-08-24 - Wouter Hulsbergen
+ - added methods to TrackStateVertex to compute p4cov and cov7x7
+
+! 2010-08-17 - Wouter Hulsbergen
+ - added some methods to TrackTraj to make it more suitable for inheritance
+
+!========================== TrackKernel v1r4 2010-06-19 ===================
+! 2010-06-10 - Wouter Hulsbergen
+ - add test on inversion in TrackStateVertex
+
+!========================== TrackKernel v1r3 2010-04-26 ===================
+! 2010-03-29 - Wouter Hulsbergen
+ - add copy constructor and assignment operator to trackstatevertex.
+ - add TrackPredicates
+
+!========================== TrackKernel v1r2 2009-11-28 ===================
+! 2009-11-24 - Wouter Hulsbergen
+ - added method to get (biased) chi2 contribution of single track in TrackStateVertex
+
+!========================== TrackKernel v1r1 2009-10-16 ===================
+! 2009-10-08 - Wouter Hulsbergen
+ - adapted to changes in LHCb::Track
+
+!========================== TrackKernel v1r0 2009-07-08 ===================
+! 2009-07-08 Wouter Hulsbergen
+ - imported classes from TrackFitEvent

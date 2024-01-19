@@ -1,0 +1,84 @@
+!-----------------------------------------------------------------------------
+! Package     : Tr/PatFitParams
+! Responsible : 
+! Purpose     : Fit MC tracks to compute the PatForward parameters
+!-----------------------------------------------------------------------------
+
+!========================= PatFitParams v4r4 2015-10-13 =========================
+! 2015-08-12 - Gerhard Raven
+ - remove #include of obsolete Gaudi headers
+
+! 2015-03-20 - Manuel Tobias Schiller
+ - FwdParameters: reimplement in terms of LinParFit as well, get identical
+   output, but somewhat more information when printed, so debugging becomes
+   easier (if something should go wrong)
+ - LinParFit: fix slight regression in the conversion of a LinParFit to string
+   (used in pretty-printing) where the correlation matrix elements were not
+   properly aligned 
+
+! 2015-03-19 - Manuel Tobias Schiller
+ - new class LinParFit for fits which are linear in their parameters, much
+   more flexible and general than anything previously available
+ - adapt various classes to take advantage of LinParFit, retire
+   FwdFitPolinomial class which serves little purpose now 
+ - modernise code in SeedFitParams
+
+!========================= PatFitParams v4r3 2015-01-14 =========================
+! 2015-01-02 - Michel De Cian
+ - Fix bug in 'MatchFitParams', which lead to wrong momentum estimate.
+
+! 2014-12-22 - Michel De Cian
+ - Add 'MatchFitParams' which produces the parameters for the matching (PatMatch).
+
+!========================= PatFitParams v4r2 2012-11-28 =========================
+! 2012-11-26 - Marco Clemencic
+ - Fixed build with C++11.
+
+! 2012-11-22 - Marco Clemencic
+ - Added CMake configuration file.
+
+! 2012-10-24 - Marco Cattaneo
+ - Fix gcc -pedantic warnings
+ - Fix Coverity defects
+
+!========================= PatFitParams v4r1 2011-02-28 =========================
+! 2011-02-25 - Olivier Callot
+ - remove obsolete and unused files PatCalibV0.h and .cpp
+
+!======================== PatFitParams v4r0 2009-09-03 =======================
+! 2009-09-03 - Marco Cattaneo
+ - Remove obsolete file src/PatFitParams_dll.cpp
+ 
+! 2009-08-19 - Olivier Callot
+ - Adapt to python configurable so that it is easy to run:
+   after havind setup Brunel, just do gaudirun.py ../options/FitParams.py
+ - Change output of the fit algorithms to produce python options
+
+!======================== PatFitParams v3r2p3 2009-05-25 =====================
+! 2009-05-22 - Marco Cattaneo
+ - Fix gcc43 compilation warning
+ - Replace all endreq by endmsg
+
+!======================== PatFitParams v3r2p2 2009-02-20 =====================
+! 2009-01-20 - Marco Cattaneo
+ - Remove obsolete includes for Gaudi ParticlePropertySvc
+
+!======================== PatFitParams v3r2p1 2008-11-21 =====================
+! 2008-11-06 - Marco Cattaneo
+ - Fixes for gcc 4.3
+
+!======================== PatFitParams v3r2 2008-07-02 =======================
+! 2008-06-29 - Manuel Tobias Schiller
+ - update to bring SeedFitParams back in sync with the parameters actually
+   used in PatSeeding
+
+!======================== PatFitParams v3r1 2008-01-28 =======================
+! 2008-01-28 - Marco Cattaneo
+ - Update options for Gaudi v19r7
+
+! 2008-01-10 - Olivier Callot
+ - Add the PatCalibV0 algorithm from Maurice, to debug V0 processing.
+
+!======================== PatFitParams v3r0 2007-10-12 =======================
+! 2007-10-09 - Stephanie Hansmann-Menzemer
+  - import from Pat/PatFitParams, for older release note see there

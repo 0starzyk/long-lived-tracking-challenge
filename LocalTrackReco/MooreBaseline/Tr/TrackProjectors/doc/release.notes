@@ -1,0 +1,400 @@
+!-----------------------------------------------------------------------------
+! Package     : Tr/TrackProjectors
+! Responsible : Wouter Hulsbergen
+! Purpose     : Package for tracking projectors
+!-----------------------------------------------------------------------------
+
+!========================= TrackProjectors v3r4 2016-01-28 =========================
+! 2016-01-07 - Gerhard Raven
+ - TrackOTLRSignTool: replace StaticArray with boost::container::static_vector
+! 2016-01-02 - Gerhard Raven
+
+ - TrackOTLRSignTool: prefer composition and forwarding over inheritance from StaticArray
+
+!========================= TrackProjectors v3r3 2015-11-23 =========================
+! 2015-11-19 - Wouter Hulsbergen
+ - fix bug in TrajOTProjector, dealing with 'pre-fixed' OT ambiguities. not exposed in normal Brunel running.
+
+!========================= TrackProjectors v3r2p1 2015-10-13 =========================
+! 2015-08-12 - Gerhard Raven
+ - remove #include of obsolete Gaudi headers
+
+!========================= TrackProjectors v3r2 2015-02-23 =========================
+! 2015-02-22 - Manuel Tobias Schiller
+ - TrajOTProjector: remove superfluous dynamic_cast, speedup about 6%
+
+! 2015-02-17 - Manuel Tobias Schiller
+ - update TrajOTProjector for upcoming changes to RtRelation class by being
+   more flexible in terms of data type returned by RtRelation's methods, no
+   functional changes, no changes in performance
+
+!========================= TrackProjectors v3r1 2014-05-13 ======================
+! 2014-04-01 - Heinrich Schindler
+ - Follow removal of VPLite measurement (r170832, r170821).
+
+! 2014-03-26 - Heinrich Schindler
+ - Add support for VP measurement type
+
+!========================= TrackProjectors v3r0 2014-02-19 ======================
+! 2014-01-13 - Marco Cattaneo
+ - Remove support for VL
+
+!========================= TrackProjectors v2r34 2013-02-14 ======================
+! 2013-02-01 - Sascha Stahl
+ - Added VL projector in selector.
+
+! 2013-01-29 - Jianchun Wang
+ - Add UT projector in the selector.
+
+! 2012-11-29 - Olivier Callot
+ - Add FT measurement as normal projectors
+
+!========================= TrackProjectors v2r33 2012-11-28 ======================
+! 2012-11-22 - Marco Clemencic
+ - Added CMake configuration file.
+
+! 2012-11-21 - Marco Clemencic
+ - Fixed -pedantic warnings.
+
+! 2012-10-24 - Marco Cattaneo
+ - Fix gcc -pedantic warnings
+ - Replace endreq by endmsg
+
+!========================= TrackProjectors v2r32 2012-10-01 ======================
+! 2012-09-20 - Paul Szczypka
+ - Rename VeloPix to VP
+
+!========================= TrackProjectors v2r31 2012-03-27 ======================
+! 2012-03-08 - Wouter Hulsbergen
+ - resolve coverity issues in TrackOTLRSignTool
+
+!========================= TrackProjectors v2r30 2012-01-31 ======================
+! 2012-01-25 - Wouter Hulsbergen
+ - add TrackOTLRSignTool which compute LR signs by looking at hit patterns
+ - adapt TrajOTProjector to make use of this
+
+! 2012-01-09 - Wouter Hulsbergen
+ - introduced 'dynamic' use of OT drifttimes (Pieter David)
+
+!========================= TrackProjectors v2r29p3 2011-12-15 ================
+! 2011-12-06 - Marco Cattaneo
+ - Fix an unprotected debug() stream
+
+!========================= TrackProjectors v2r29p2 2011-11-08 ================
+! 2011-10-12 - Marco Cattaneo
+ - Mask icc warnings and fix icc remarks
+
+!========================= TrackProjectors v2r29p1 2011-06-15 ================
+! 2011-05-12 Wouter Hulsbergen
+ - small bug fix in error assigned to OT hits in ambiguity fit ('prefit')
+
+!========================= TrackProjectors v2r29 2011-02-28 =========================
+! 2011-02-18 Wouter Hulsbergen
+ - Call node.updateProjection tomake sure it properly resets kalman filer status.
+
+!====================== TrackProjectors v2r28p2 2010-06-21 ====================
+! 2010-06-07 - Rob Lambert
+ - Fixes for windows warnings savannah task #15808
+
+!====================== TrackProjectors v2r28p1 2010-05-21 ====================
+! 2010-05-13 - Rob Lambert
+ - review warnings
+
+!====================== TrackProjectors v2r28 2010-03-26 ====================
+! 2010-04-13 - Victor Coco
+ - Make TrajProjector and TrackProjectorSelector aware of VeloPix
+
+!====================== TrackProjectors v2r27p1 2010-03-24 ====================
+! 2010-03-22 - Rob Lambert
+ - Supress output to debug in initialize
+
+!====================== TrackProjectors v2r27 2010-02-15 =====================
+! 2010-02-14 Wouter Hulsbergen
+ - improvements in OTProjector 
+   - implement new 'prefit' strategy proposed by Tjeerd Ketel
+   - skip drifttimes that are ~2sigma (6ns) outside drifttime spectrum
+   - set 'driftTimeStrategy flag in OTMeasurement
+
+!====================== TrackProjectors v2r26 2009-11-16 =====================
+! 2009-11-13 Wouter Hulsbergen
+ - Declare TrackProjector to the toolfactory
+ - Use faster/simpler computation for alignment derivatives
+
+! 2009-11-04 Wouter Hulsbergen
+ - Set default value of fitEventT0 of cosmics projector to true
+
+!====================== TrackProjectors v2r25 2009-10-20 =====================
+! 2009-09-25 Wouter Hulsbergen
+ - Fill new data member doca in FitNode
+
+!====================== TrackProjectors v2r24 2009-09-03 =====================
+! 2009-09-01 Wouter Hulsbergen
+ - OTProjector will not use drifttime if ambiguity is zero (unitialized)
+
+!====================== TrackProjectors v2r23 2009-07-14 =====================
+! 2009-07-14 - Marco Cattaneo
+ - Remove obsolete file TrackProjectors_dll.cpp
+
+! 2009-07-08 - Wouter Hulsbergen
+ - adapted to migration of track classes to TrackKernel
+
+!====================== TrackProjectors v2r22 2009-02-20 =====================
+! 2009-01-19 David Hutchcroft
+ - Added the VeloLite projectors
+
+!====================== TrackProjectors v2r21 2009-01-12 =====================
+! 2009-01-06 M Needham
+ - Add IT/TTLite projectors to Selector
+
+!====================== TrackProjectors v2r20 2008-11-23 =====================
+! 2008-10-03 Wouter Hulsbergen
+ - Changes for fitting OT tracks with drift times in cosmics data
+
+!====================== TrackProjectors v2r19 2008-10-02 =====================
+! 2008-09-15 Wouter Hulsbergen
+ - added project method for FitNode
+ - major cleanup 
+ - added TrajOTCosmicsProjector
+
+!====================== TrackProjectors v2r18 2007-11-30 =====================
+! 2007-11-30 Wouter Hulsbergen
+ - add StateVector as argument to alignmentDerivatives, because ref no longer
+   stored in Measurement
+ - use OT calibration in fit
+
+!====================== TrackProjectors v2r17 2007-10-22 ======================
+! 2007-10-16 Wouter Hulsbergen
+ - adapted to changes in Trajectory interface
+ - replaced StateTraj with StateZTraj in projectors (to speed things up)
+
+!====================== TrackProjectors v2r16 2007-10-04 ======================
+! 2007-09-25 Wouter Hulsbergen
+ - add method to project StateVector
+ - remove the use of the reference vector in the projection
+
+! 2007-09-21 - Gerhard Raven
+ - Add an option to ignore the drift distance in TrajOTProjector
+   Default is to use it, so by default the behaviour remains the same
+
+!====================== TrackProjectors v2r15 2007-09-20 ======================
+! 2007-08-16 - Gerhard Raven
+ - Fix misunderstanding on the sign in the alignmentDerivative methods of the
+   (two) Traj Projectors. Only affects alignment code.
+
+!====================== TrackProjectors v2r14 2007-07-23 ======================
+! 2007-07-23 - Wouter Hulsbergen
+ - Add TrajMuonProjector
+
+!====================== TrackProjectors v2r13 2007-06-25 ======================
+! 2007-06-25 - Marco Cattaneo
+ - Put back Gaudi:: namespace in .cpp calling sequences, 
+   needed to please doxygen (expects .h and .cpp to be the same)
+
+! 2007-06-22 - Edwin Bos
+ - Introduced jobOption: "UseBField". If true, then the StateTraj in the
+ - projector is made using the B from the magnetic field service. If false,
+ - then B = (0,0,0) is used, making the StateTraj behave like a LineTraj. The
+ - latter option is faster and set as default.
+
+!====================== TrackProjectors v2r12 2007-05-09 ======================
+! 2007-04-27 - Jose Hernando, Miriam Gandelman, Erica Polycarpo 
+ - Create MuonProjector class
+
+!====================== TrackProjectors v2r11 2007-03-21 ======================
+! 2007-03-21 - Marco Cattaneo
+ - Fix doxygen warnings
+
+! 2007-03-20 M. Needham
+ - Make sure StatusCodes are tested
+
+!====================== TrackProjectors v2r10 2007-03-02 ======================
+! 2007-03-02 - Marco Cattaneo
+ - Remove LHCbDefinitions includes
+ - Remove obsolete TrackProjectors_load.cpp file
+
+!====================== TrackProjectors v2r9 2006-12-18 ======================
+! 2006-12-15 - Gerhard Raven
+ - General consolidation of various projectors into less code
+ - Remove of old non-trajectory projectors
+ - Addition of derivatives wrt. alignment parameters
+ - Add a 'projector selector' to replace the 'call-thru' master selector
+
+!====================== TrackProjectors v2r8 2006-11-30 ======================
+! 2006-11-30 - Edwin Bos
+ - Calls to TrajPoca minimize now handle returned StatusCode
+
+!====================== TrackProjectors v2r7 2006-11-07 ======================
+! 2006-11-02 - Jeroen VAN TILBURG
+ - TrajXxxProjectors: the B-field is now determined from the position of the
+   reference vector.
+
+!====================== TrackProjectors v2r6 2006-08-01 ======================
+! 2006-08-01 - Marco Cattaneo
+ - Use DECLARE_TOOL_FACTORY macro everywhere
+
+! 2006-07-31 - Eduardo Rodrigues
+ - TrajOTProjector: set the L/R ambiguity according to the track fit.
+   This is updated at each iteration.
+
+!====================== TrackProjectors v2r5 2006-06-30 ======================
+! 2006-06-29 M Needham
+ - Updates since poca tool interface moved to LHCbKernel
+
+! 2006-06-26 - Marco Cattaneo
+ - Fix problem with duplicate tool pointer
+
+!====================== TrackProjectors v2r4 2006-06-16 ======================
+! 2006-06-15 - Gerhard Raven
+ - Make the projectionMatrix a 1x5 Matrix instead of a 5-vector,
+   and update the code to take advantage of this.
+ - update TrackXXXProjectors to write them more like TrajXXXProjectors
+
+! 2006-06-06 - Eduardo Rodrigues
+ - removed explicit 5-dimension number from code
+
+! 2006-05-19 - Eduardo Rodrigues
+ - OTMeasurement ambiguities set on the fly
+ - "using namespace ..." removed from header files
+
+! 2006-05-19 - David Hutchcroft
+ - Changed DeVelo location to DeVeloLocation::Default (from hardcoded string)
+
+!====================== TrackProjectors v2r3 2006-05-17 ======================
+! 2006-05-17 - Marco Cattaneo
+ - Migrate to Gaudi::Units
+
+!====================== TrackProjectors v2r2 2006-05-03 ======================
+! 2006-04-24 - Eduardo Rodrigues
+ - TrackMasterProjector uses Trajectory projectors by default
+
+!====================== TrackProjectors v2r1 2006-04-13 ======================
+! 2006-04-13 - Jeroen van Tilburg
+ - Added tolerance job-option to specify the required precision of the
+   TrajXxxProjector. Also set this to values smaller than the measurement
+   error.
+
+! 2006-04-06 - Jeroen van Tilburg
+ - Added errMeasure method to TrackProjector. This is needed by the track fit.
+   The different projector implementations fill the corresponding data member.
+
+! 2006-04-04 - Jan Amoraal
+ - TrackOTProjector.cpp: Adapt to new OTDet interface
+
+! 2006-03-31 - Jeroen van Tilburg
+ - Changed all ...Projectors to use the new resolution method.
+
+! 2006-03-26 - Eduardo Rodrigues
+ - adaptations to new SMatrix-5.10.00b and higher
+
+!====================== TrackProjectors v2r0 2006-03-23 ======================
+! 2006-03-23 - Mark Tobin
+ - Modified to use new VeloDet interface
+
+! 2006-03-08 - Eduardo Rodrigues
+ - update to new VeloDet path
+
+! 2006-02-28 - Jeroen van Tilburg
+ - TrajXxxProjectors: Measurement returns a reference instead of pointer.
+
+! 2006-02-27 - Jeroen van Tilburg
+ - TrackSTProjector: stereoangle is now correctly filled.
+ - Projectors now use the reference vectors from the Measurement base class.
+ - Added TrajVeloRProjector and TrajVeloPhiProjector tools.
+ - TrajXxxProjector: retrieve Trajectory pointer from measurement.
+
+! 2006-02-21 - Jeroen van Tilburg
+ - Added TrajSTProjector class.
+ - TrajOTProjector: Implemented correctly length of a wire.
+
+! 2006-02-21 - David Hutchcroft
+ - Updated VeloPhiProjector to work with new VeloClusters
+
+! 2006-02-20 - Jeroen van Tilburg
+ - TrackOTProjector: Moved from time to distance domain.
+ - TrajOTProjector: some simplifications, corrected the sign of m_H and of
+   m_residual introduced by previous cvs release. Movement to distance domain
+   was already made in the previous cvs release.
+
+! 2006-02-16 - Edwin Bos
+ - Moved to LHCb v20r0
+ - Removed *Ray* due to introduction of Trajectories
+
+!====================== TrackProjectors v1r5 2006-01-27 ======================
+! 2006-01-17 - Jeroen van Tilburg
+ - Fixed a bug in TrackOTProjector: Elements of the projection matrix,
+   m_H[2] and m_H[3], were sometimes calculated incorrectly.
+
+! 2006-01-17 - Edwin Bos, Jeroen van Tilburg, Eduardo Rodrigues
+ - First version of the TrajOTProjector tool, an OT projector
+   that uses trajectories internally instead of the standard way
+
+! 2005-12-14 - Eduardo Rodrigues
+ - renamed TrackITProjector to TrackSTProjector
+ - propagation of changes in Measurement classes to TrackMasterProjector
+
+! 2005-11-29 - Edwin Bos, Jeroen van Tilburg, Eduardo Rodrigues
+ - First version of the TrajOTProjector tool, an OT projector
+   that uses trajectories internally instead of the standard way
+
+!====================== TrackProjectors v1r4 2005-11-29 ======================
+! 2005-11-21 - Jeroen van Tilburg
+ - Required changes due to changes in VeloPhiMeasurement. Now using method
+   resolution().
+
+! 2005-10-28 - Jose A. Hernando
+ - RayIntersector
+   A class that computes the distance between two straight lines (rays)  
+   and the derivation of that distance.
+ - TrackOTRayProjector
+   Computing the OT projection using the Ray Intersector
+   (first version)
+
+!====================== TrackProjectors v1r3 2005-10-07 ======================
+! 2005-09-29 - Eduardo Rodrigues
+ - pow functions replaced by GSL corresponding versions
+ - clean-up of unnecessary debugging
+
+!====================== TrackProjectors v1r2 2005-07-20 ======================
+! 2005-07-14 - Jose A. Hernando
+ - TrackMasterProjector uses now unsigned int instead of type of measurements
+
+!====================== TrackProjectors v1r1 2005-06-24 ======================
+! 2005-06-15 - Eduardo Rodrigues
+ - TrackMasterProjector can now handle all types of measurements
+ - added extra debugging information (temporarily)
+
+!====================== TrackProjectors v1r0 2005-05-25 ======================
+! 2005-05-25 - Marco Cattaneo
+ - Remove TrackProjectors directory, move files to src
+ - Add dummy implementation of TrackProjector::project() to please Windows linker
+
+! 2005-05-24 - Eduardo Rodrigues
+ - propagating changes from TrackEvent
+ - tools adapted to use interfaces from Tr/TrackInterfaces and no
+   longer from Kernel/LHCbInterfaces
+
+! 2005-04-18 - Jose Hernando, Eduardo Rodrigues
+ - the main method of the projectors return a StatusCode
+
+! 2005-04-13 - Jose Hernando, Eduardo Rodrigues
+ - concrete classes TrackVeloRProjector and TrackVeloPhiProjector
+   introduced and implemented
+
+! 2005-04-12 - Jose Hernando, Eduardo Rodrigues
+ - creation of the TrackMasterProjector
+ - ITTrackProjector and OTTrackProjector renamed to
+   TrackITProjector and TrackOTProjector, respectively
+
+! 2005-04-08 - Jose Hernando, Eduardo Rodrigues
+ - additions to base class TrackProjector
+ - concrete classes ITTrackProjector and OTTrackProjector introduced
+   and implemented
+
+! 2005-03-31 - Eduardo Rodrigues
+ - implementation of TrackProjector.cpp
+
+! 2005-03-10 - Jose Hernando, Eduardo Rodrigues
+ - creation of the package. It will contain the tracking projectors
+ - contains for now:
+   - TrackProjector: base class inheriting from the pure virtual
+                     interface ITrackProjector

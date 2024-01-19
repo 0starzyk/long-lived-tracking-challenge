@@ -1,0 +1,816 @@
+/*****************************************************************************\
+* (c) Copyright 2000-2018 CERN for the benefit of the LHCb Collaboration      *
+*                                                                             *
+* This software is distributed under the terms of the GNU General Public      *
+* Licence version 3 (GPL Version 3), copied verbatim in the file "COPYING".   *
+*                                                                             *
+* In applying this licence, CERN does not waive the privileges and immunities *
+* granted to it by virtue of its status as an Intergovernmental Organization  *
+* or submit itself to any jurisdiction.                                       *
+\*****************************************************************************/
+//########################################################################
+//
+// Additional implementation file for class : ParameterizedKalmanFit_Checker
+//
+// 2017-11-02: Simon Stemmle
+//
+//########################################################################
+namespace {
+  using FTYPE = double;
+}
+////////////////////////////////////////
+// Load hit information
+////////////////////////////////////////
+void ParameterizedKalmanFit_Checker::LoadHits_Ch( trackInfo&                                       tI,
+                                                  const ToolHandle<IMeasurementProviderProjector>& m_measProvider,
+                                                  bool m_UseUT, bool m_UseT, trackTupleInfo* tV ) const {
+  LoadHitsFromTrackV1( tI, m_measProvider, m_UseUT, m_UseT );
+  // set tree varaibles
+  tV->m_NHitsV     = tI.m_NHitsV;
+  tV->m_NHitsUT    = tI.m_NHitsUT;
+  tV->m_NHitsT     = tI.m_NHitsT;
+  tV->m_NHitsTotal = tI.m_NHitsTotal;
+}
+
+/////////////////////////////////////////////////
+// Check if a MC particle is linked to this track
+/////////////////////////////////////////////////
+int ParameterizedKalmanFit_Checker::MatchesMC( const trackInfo& tI, const MCTrackInfo& trackInfo ) const {
+  // Look for an associated MC particle
+  if ( !tI.links ) {
+    error() << "Links not initialized." << endmsg;
+    return 0;
+  }
+  auto trackLinks = tI.links->from( tI.m_track->key() );
+  if ( trackLinks.empty() ) {
+    debug() << "No links for track key " << tI.m_track->key() << endmsg;
+    return 0;
+  }
+  auto mcpart = std::max_element( trackLinks.begin(), trackLinks.end(), [&]( const auto& a, const auto& b ) {
+                  return a.to()->momentum().P() < b.to()->momentum().P();
+                } )->to();
+  if ( !mcpart ) return 0;
+
+  // check quality of matching
+  if ( 0 == trackInfo.fullInfo( mcpart ) ) return 2;
+  bool isLong = trackInfo.hasVeloAndT( mcpart );
+  isLong      = isLong && ( abs( mcpart->particleID().pid() ) != 11 ); // and not electron
+  if ( !isLong ) return 2;
+  bool eta25 = ( mcpart->momentum().Eta() > 1.8 && mcpart->momentum().Eta() < 5.3 );
+  if ( !eta25 ) return 2;
+
+  if ( std::fabs( tI.m_track->pseudoRapidity() - mcpart->momentum().Eta() ) > 0.05 ) return 2;
+  return 1;
+}
+
+//////////////////////////////////////////
+// Get true state at a given z position
+//////////////////////////////////////////
+bool ParameterizedKalmanFit_Checker::TrueState( double zpos, double& trueX, double& trueY, double& truetX,
+                                                double& truetY, double& trueqop, const trackInfo& tI,
+                                                IGeometryInfo const& geometry, bool initialQop ) const {
+  // Look for an associated MC particle
+  if ( !tI.links ) {
+    error() << "Links not initialized." << endmsg;
+    return 0;
+  }
+  auto trackLinks = tI.links->from( tI.m_track->key() );
+  if ( trackLinks.empty() ) {
+    debug() << "No links for track key " << tI.m_track->key() << endmsg;
+    return 0;
+  }
+  auto mcpart = std::max_element( trackLinks.begin(), trackLinks.end(), [&]( const auto& a, const auto& b ) {
+                  return a.to()->momentum().P() < b.to()->momentum().P();
+                } )->to();
+  if ( !mcpart ) return false;
+
+  LHCb::State state;
+  StatusCode  sc = m_idealStateCreator->createState( mcpart, zpos, state, geometry );
+  if ( !sc.isSuccess() ) error() << "No ideal state could be created" << endmsg;
+  trueX  = state.x();
+  trueY  = state.y();
+  truetX = state.tx();
+  truetY = state.ty();
+  if ( !initialQop )
+    trueqop = state.qOverP();
+  else
+    trueqop = mcpart->particleID().threeCharge() * 1. / 3 * 1. / mcpart->momentum().P();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+// Method to set the information of the default extrapolator for the tuning
+////////////////////////////////////////////////////////////////////////////
+void ParameterizedKalmanFit_Checker::fillInfoForExtrapolation( double z_prev, double z, trackInfo& tI,
+                                                               trackTupleInfo*      tV,
+                                                               IGeometryInfo const& geometry ) const {
+  // Create the true state at the previous z position
+  double tr_x[5] = {0};
+  TrueState( z_prev, tr_x[0], tr_x[1], tr_x[2], tr_x[3], tr_x[4], tI, geometry, false ); // qop at position
+  Gaudi::TrackVector    stateVec( tr_x, 5 );
+  double                C[15] = {0};
+  Gaudi::TrackSymMatrix covMat( C, 15 );
+  LHCb::State           state( stateVec, covMat, z_prev, LHCb::State::Location::LocationUnknown );
+  // get the extrapolated state
+  m_extrapolator->propagate( state, z, geometry ).ignore();
+  tV->m_x_extr[0] = state.x();
+  tV->m_x_extr[1] = state.y();
+  tV->m_x_extr[2] = state.tx();
+  tV->m_x_extr[3] = state.ty();
+  tV->m_x_extr[4] = state.qOverP();
+  covMat          = state.covariance();
+
+  int k = 0;
+  for ( int i = 0; i < 5; i++ ) {
+    for ( int j = 0; j <= i; j++ ) {
+      tV->m_P_extr[k] = covMat( i, j );
+      k++;
+    }
+  }
+}
+
+///////////////////////////////////////////
+// Method to create a seed state at the first Velo hit
+///////////////////////////////////////////
+void ParameterizedKalmanFit_Checker::CreateVeloSeedState_Ch( int nHit, Gaudi::Vector5& x, Gaudi::SymMatrix5x5& C,
+                                                             double& lastz, trackInfo& tI, std::vector<TTree*>* trees,
+                                                             trackTupleInfo* tV, IGeometryInfo const& geometry ) const {
+  CreateVeloSeedState( nHit, x, C, lastz, tI );
+
+  // Fill Ntuple for tuning
+  tV->m_NHit = nHit;
+  // Set true qop at current position
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_qop_here, tI,
+             geometry, false );
+  // get the true state with inital true momentum
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_x[4], tI, geometry );
+
+  tV->m_hit_x0     = tI.m_XMeasV[nHit];
+  tV->m_hit_y0     = tI.m_YMeasV[nHit];
+  tV->m_hit_z0     = tI.m_ZMeasV[nHit];
+  tV->m_hit_dzdy   = 0;
+  tV->m_hit_dxdy   = 0;
+  tV->m_hit_x0_err = tI.m_XErrV[nHit];
+  tV->m_hit_y0_err = tI.m_YErrV[nHit];
+
+  std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+  std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  tV->m_z = lastz;
+
+  ( *trees )[TrPos_crSeed]->Fill();
+
+  // set state to true state. Used for tuning the prediction
+  if ( m_SetTrueStateAfterCreateSeed ) {
+    for ( int i = 0; i < 5; i++ )
+      for ( int j = 0; j <= i; j++ ) C( i, j ) = 0.;
+    x.SetElements( tV->m_true_x.begin(), tV->m_true_x.end() );
+    std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+    std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  }
+}
+
+//////////////////////////////////////////
+// General method for updating at a hit
+//////////////////////////////////////////
+void ParameterizedKalmanFit_Checker::UpdateState_Ch( int forward, int nHit, Gaudi::Vector5& x, Gaudi::SymMatrix5x5& C,
+                                                     double& lastz, trackInfo& tI, std::vector<TTree*>* trees,
+                                                     trackTupleInfo* tV, IGeometryInfo const& geometry ) const {
+  UpdateState( forward, nHit, x, C, lastz, tI );
+
+  tV->m_NHit = nHit;
+
+  tV->m_x_prev      = tV->m_x;
+  tV->m_true_x_prev = tV->m_true_x;
+  tV->m_z_prev      = tV->m_z;
+  std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+  std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  tV->m_z = lastz;
+  // set respective hit measurement
+  if ( nHit < tI.m_NHitsV ) {
+    tV->m_hit_x0     = tI.m_XMeasV[nHit];
+    tV->m_hit_y0     = tI.m_YMeasV[nHit];
+    tV->m_hit_z0     = tI.m_ZMeasV[nHit];
+    tV->m_hit_dzdy   = 0;
+    tV->m_hit_dxdy   = 0;
+    tV->m_hit_x0_err = tI.m_XErrV[nHit];
+    tV->m_hit_y0_err = tI.m_YErrV[nHit];
+  } else if ( nHit < tI.m_NHitsV + tI.m_NHitsUT ) {
+    const FitterHit& hit = tI.m_measUtLite[tI.m_UTHitToUTLayer[nHit - tI.m_NHitsV]];
+
+    tV->m_hit_x0 = hit.point.X();
+    tV->m_hit_y0 = hit.point.Y();
+    tV->m_hit_z0 = hit.point.Z();
+
+    tV->m_hit_dzdy   = hit.direction.Z() / hit.direction.Y();
+    tV->m_hit_dxdy   = hit.direction.X() / hit.direction.Y();
+    tV->m_hit_x0_err = hit.error;
+  } else {
+    const FitterHit& hit = tI.m_measFtLite[tI.m_THitToTLayer[nHit - tI.m_NHitsV - tI.m_NHitsUT]];
+    tV->m_hit_x0         = hit.point.X();
+    tV->m_hit_y0         = hit.point.Y();
+    tV->m_hit_dzdy       = hit.direction.Z() / hit.direction.Y();
+    tV->m_hit_dxdy       = hit.direction.X() / hit.direction.Y();
+    tV->m_hit_x0_err     = hit.error;
+    tV->m_hit_z0         = hit.point.Z();
+  }
+
+  // Set true qop at current position
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_qop_here, tI,
+             geometry, false );
+  // get the true state with inital true momentum
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_x[4], tI, geometry );
+
+  // upper or lower detector part? (different tunings in T)
+  int downPart = 1;
+  if ( tV->m_x[1] > 0 ) downPart = 0;
+
+  // fill the respective tuple
+  // Convention
+  //
+  // UT forward:
+  // 0 1 2 3
+  //| | | |
+  //| | | |
+  //
+  // UT backward:
+  // 7 6 5 4
+  //| | | |
+  //| | | |
+  //
+  // T forward:
+  // 0  2  4  6      8  10 12 14    16 18 20 22
+  //|  |  |  |      |  |  |  |     |  |  |  |
+  //|  |  |  |      |  |  |  |     |  |  |  |
+  // 1  3  5  7      9  11 13 15    17 19 21 23
+  //
+  // T backward
+  // 46 44 42 40     38 36 34 32    30 28 26 24
+  //|  |  |  |      |  |  |  |     |  |  |  |
+  //|  |  |  |      |  |  |  |     |  |  |  |
+  // 47 45 43 41     39 37 35 33    31 29 27 25
+  if ( forward > 0 ) {
+    if ( nHit < tV->m_NHitsV )
+      ( *trees )[TrPos_upV]->Fill();
+    else if ( nHit == tV->m_NHitsV ) {
+      if ( tV->m_NHitsUT != 0 ) {
+        ( *trees )[TrPos_upFUT]->Fill();
+        ( *trees )[TrPos_upUT + tI.m_PrevNUT]->Fill();
+      } else {
+        ( *trees )[TrPos_upFUT]->Fill();
+        ( *trees )[TrPos_upT + downPart + 2 * tI.m_PrevNT]->Fill();
+      }
+    } else if ( nHit < tV->m_NHitsV + tV->m_NHitsUT ) {
+      ( *trees )[TrPos_upUT + tI.m_PrevNUT]->Fill();
+    } else if ( nHit == tV->m_NHitsV + tV->m_NHitsUT ) {
+      ( *trees )[TrPos_upFT]->Fill();
+      ( *trees )[TrPos_upT + downPart]->Fill();
+    } else {
+      ( *trees )[TrPos_upT + 2 * tI.m_PrevNT + downPart]->Fill();
+    }
+  } else {
+    if ( nHit >= tV->m_NHitsV + tV->m_NHitsUT )
+      ( *trees )[TrPos_upT + ( 22 - 2 * tI.m_PrevNT ) + 24 + downPart]->Fill();
+    else if ( nHit == tV->m_NHitsV + tV->m_NHitsUT - 1 ) {
+      if ( tV->m_NHitsUT != 0 ) {
+        ( *trees )[TrPos_upLUT]->Fill();
+        ( *trees )[TrPos_upUT + 4]->Fill();
+      } else {
+        ( *trees )[TrPos_upLV]->Fill();
+      }
+    } else if ( nHit >= tV->m_NHitsV )
+      ( *trees )[TrPos_upUT + 7 - tI.m_PrevNUT]->Fill();
+    else if ( nHit == tV->m_NHitsV - 1 )
+      ( *trees )[TrPos_upLV]->Fill();
+    else
+      ( *trees )[TrPos_upV + 1]->Fill();
+  }
+
+  // set state to true state + artifical smearing for tuning updatePosition
+  if ( m_SetTrueStateAfterUpdate ) {
+    for ( int i = 0; i < 5; i++ )
+      for ( int j = 0; j <= i; j++ ) C( i, j ) = 0.;
+    x.SetElements( tV->m_true_x.begin(), tV->m_true_x.end() );
+    std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+    std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+    tI.m_BestMomEst = x[4];
+  }
+}
+
+//////////////////////////////////////////
+// General method for predicting to a hit
+//////////////////////////////////////////
+bool ParameterizedKalmanFit_Checker::PredictState_Ch( int forward, int nHit, Gaudi::Vector5& x, Gaudi::SymMatrix5x5& C,
+                                                      double& lastz, trackInfo& tI, std::vector<TTree*>* trees,
+                                                      trackTupleInfo* tV, IGeometryInfo const& geometry ) const {
+  // success flag
+  bool Succes = true;
+
+  // Choose the appropiate predicting method depending on the detector
+  // forward_________________________________________________________
+  if ( forward > 0 ) {
+    // Predict inside VELO
+    if ( nHit < tI.m_NHitsV ) PredictStateV( nHit, x, C, lastz, tI );
+
+    // Predict to first UT layer or directly to T
+    else if ( nHit == tI.m_NHitsV ) {
+      // To first UT hit
+      Succes       = PredictStateVUT( x, C, lastz, tI );
+      tI.m_PrevNUT = 0;
+      // predict further in UT if there is no hit
+      while ( tI.m_HasHitUT[tI.m_PrevNUT] == 0 && Succes && tI.m_PrevNUT < 3 ) {
+        tI.m_PrevNUT++;
+        PredictStateUT( tI.m_PrevNUT, x, C, lastz, tI );
+      }
+      // In case there is no UT hit, extrapolate to T
+      if ( tI.m_NHitsUT == 0 && Succes ) {
+        PredictStateUTT_Ch( x, C, lastz, tI, trees, tV, geometry );
+        tI.m_PrevNT = 0;
+        // predict further if there is no hit
+        while ( tI.m_HasHitT[tI.m_PrevNT] == 0 ) {
+          tI.m_PrevNT++;
+          PredictStateT( tI.m_PrevNT, x, C, lastz, tI );
+        }
+      }
+    }
+    // Predict inside UT
+    else if ( nHit < tI.m_NHitsV + tI.m_NHitsUT ) {
+      // predict to next UT layer
+      tI.m_PrevNUT++;
+      PredictStateUT( tI.m_PrevNUT, x, C, lastz, tI );
+      // predict further if there is no hit
+      while ( tI.m_HasHitUT[tI.m_PrevNUT] == 0 && tI.m_PrevNUT < 3 ) {
+        tI.m_PrevNUT++;
+        PredictStateUT( tI.m_PrevNUT, x, C, lastz, tI );
+      }
+    }
+
+    // Predict from UT to T
+    else if ( nHit == tI.m_NHitsV + tI.m_NHitsUT ) {
+      // check if we are at last UT station layer
+      while ( tI.m_PrevNUT < 3 ) {
+        tI.m_PrevNUT++;
+        PredictStateUT( tI.m_PrevNUT, x, C, lastz, tI );
+      }
+      PredictStateUTT_Ch( x, C, lastz, tI, trees, tV, geometry );
+      tI.m_PrevNT = 0;
+      // predict further if there is no hit
+      while ( tI.m_HasHitT[tI.m_PrevNT] == 0 ) {
+        tI.m_PrevNT++;
+        PredictStateT( tI.m_PrevNT, x, C, lastz, tI );
+      }
+    }
+
+    // Predict inside T
+    else if ( nHit < tI.m_NHitsTotal ) {
+      // predict to next T layer
+      tI.m_PrevNT++;
+      PredictStateT( tI.m_PrevNT, x, C, lastz, tI );
+      // predict further if there is no hit
+      while ( tI.m_HasHitT[tI.m_PrevNT] == 0 && tI.m_PrevNT < 11 ) {
+        tI.m_PrevNT++;
+        PredictStateT( tI.m_PrevNT, x, C, lastz, tI );
+      }
+    }
+  }
+  // forward end_____________________________________________________
+
+  // backwards_______________________________________________________
+  else {
+    // reset prevNT in case there was no forward prediction
+    if ( nHit == tI.m_NHitsTotal - 2 ) tI.m_PrevNT = 11;
+    // Predict inside T
+    if ( nHit >= tI.m_NHitsV + tI.m_NHitsUT ) {
+      // predict to next UT layer
+      tI.m_PrevNT--;
+      PredictStateT( tI.m_PrevNT, x, C, lastz, tI );
+      // predict further if there is no hit
+      while ( tI.m_HasHitT[tI.m_PrevNT] == 0 && tI.m_PrevNT > 0 ) {
+        tI.m_PrevNT--;
+        PredictStateT( tI.m_PrevNT, x, C, lastz, tI );
+      }
+    }
+
+    // Predict to first UT layer or directly to VP
+    else if ( nHit == tI.m_NHitsV + tI.m_NHitsUT - 1 ) {
+      // To last UT hit
+      PredictStateUTT_Ch( x, C, lastz, tI, trees, tV, geometry );
+      tI.m_PrevNUT = 3;
+      // predict further if there is no hit
+      while ( tI.m_HasHitUT[tI.m_PrevNUT] == 0 && tI.m_PrevNUT > 0 ) {
+        tI.m_PrevNUT--;
+        PredictStateUT( tI.m_PrevNUT, x, C, lastz, tI );
+      }
+      // In case there is no UT hit, extrapolate to VP
+      if ( tI.m_NHitsUT == 0 ) { Succes &= PredictStateVUT( x, C, lastz, tI ); }
+    }
+
+    // Predict inside UT
+    else if ( nHit >= tI.m_NHitsV ) {
+      // predict to next UT layer
+      tI.m_PrevNUT--;
+      PredictStateUT( tI.m_PrevNUT, x, C, lastz, tI );
+      // predict further if there is no hit
+      while ( tI.m_HasHitUT[tI.m_PrevNUT] == 0 && tI.m_PrevNUT > 0 ) {
+        tI.m_PrevNUT--;
+        PredictStateUT( tI.m_PrevNUT, x, C, lastz, tI );
+      }
+    }
+
+    // Predict to VP
+    else if ( nHit == tI.m_NHitsV - 1 ) {
+      Succes &= PredictStateVUT( x, C, lastz, tI );
+    }
+
+    // Simple version for the VELO
+    else if ( nHit < tI.m_NHitsV - 1 ) {
+      PredictStateV( nHit, x, C, lastz, tI );
+    }
+  }
+  // backwards end___________________________________________________
+
+  // Save information for the smoother
+  if ( tI.m_do_smoother ) {
+    if ( forward > 0 ) {
+      tI.m_StateForwardPredicted[nHit] = x;
+      tI.m_CovForwardPredicted[nHit]   = C;
+    } else {
+      tI.m_StateBackwardPredicted[nHit] = x;
+      tI.m_CovBackwardPredicted[nHit]   = C;
+    }
+  }
+  // Fill Ntuple for tuning/checking
+  tV->m_NHit = nHit;
+
+  tV->m_x_prev      = tV->m_x;
+  tV->m_true_x_prev = tV->m_true_x;
+  tV->m_z_prev      = tV->m_z;
+  std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+  std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  tV->m_z = lastz;
+
+  // set respective hit measurement
+  if ( nHit < tI.m_NHitsV ) {
+    tV->m_hit_x0     = tI.m_XMeasV[nHit];
+    tV->m_hit_y0     = tI.m_YMeasV[nHit];
+    tV->m_hit_z0     = tI.m_ZMeasV[nHit];
+    tV->m_hit_dzdy   = 0;
+    tV->m_hit_dxdy   = 0;
+    tV->m_hit_x0_err = tI.m_XErrV[nHit];
+    tV->m_hit_y0_err = tI.m_YErrV[nHit];
+  } else if ( nHit < tI.m_NHitsV + tI.m_NHitsUT ) {
+    const FitterHit& hit = tI.m_measUtLite[tI.m_UTHitToUTLayer[nHit - tI.m_NHitsV]];
+
+    tV->m_hit_x0 = hit.point.X();
+    tV->m_hit_y0 = hit.point.Y();
+    tV->m_hit_z0 = hit.point.Z();
+
+    tV->m_hit_dzdy   = hit.direction.Z() / hit.direction.Y();
+    tV->m_hit_dxdy   = hit.direction.X() / hit.direction.Y();
+    tV->m_hit_x0_err = hit.error;
+  } else {
+    const FitterHit& hit = tI.m_measFtLite[tI.m_THitToTLayer[nHit - tI.m_NHitsV - tI.m_NHitsUT]];
+
+    tV->m_hit_x0 = hit.point.X();
+    tV->m_hit_y0 = hit.point.Y();
+    tV->m_hit_z0 = hit.point.Z();
+
+    tV->m_hit_dzdy   = hit.direction.Z() / hit.direction.Y();
+    tV->m_hit_dxdy   = hit.direction.X() / hit.direction.Y();
+    tV->m_hit_x0_err = hit.error;
+  }
+
+  // Set true qop at current position
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_qop_here, tI,
+             geometry, false );
+  // get the true state with inital true momentum
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_x[4], tI, geometry );
+
+  // get the infromation from the default propagator
+  fillInfoForExtrapolation( tV->m_z_prev, tV->m_z, tI, tV, geometry );
+
+  // upper or lower detector part? (different tunings in T)
+  int downPart = 1;
+  if ( tV->m_x[1] > 0 ) downPart = 0;
+
+  // fill the respective tuple
+  // Convention
+  //
+  // UT forward:
+  // 0 1 2 3
+  //| | | |
+  //| | | |
+  //
+  // UT backward:
+  // 7 6 5 4
+  //| | | |
+  //| | | |
+  //
+  // T forward:
+  // 0  2  4  6      8  10 12 14    16 18 20 22
+  //|  |  |  |      |  |  |  |     |  |  |  |
+  //|  |  |  |      |  |  |  |     |  |  |  |
+  // 1  3  5  7      9  11 13 15    17 19 21 23
+  //
+  // T backward
+  // 46 44 42 40     38 36 34 32    30 28 26 24
+  //|  |  |  |      |  |  |  |     |  |  |  |
+  //|  |  |  |      |  |  |  |     |  |  |  |
+  // 47 45 43 41     39 37 35 33    31 29 27 25
+  if ( forward > 0 ) {
+    if ( nHit < tV->m_NHitsV )
+      ( *trees )[TrPos_predV]->Fill();
+    else if ( nHit == tV->m_NHitsV ) {
+      if ( tV->m_NHitsUT != 0 ) ( *trees )[TrPos_predVUT + tI.m_PrevNUT]->Fill();
+    } else if ( nHit < tV->m_NHitsV + tV->m_NHitsUT )
+      ( *trees )[TrPos_predUT + tI.m_PrevNUT]->Fill();
+    else if ( nHit == tV->m_NHitsV + tV->m_NHitsUT )
+      ( *trees )[TrPos_predUTT + downPart + 2 * tI.m_PrevNT]->Fill();
+    else
+      ( *trees )[TrPos_predT + 2 * tI.m_PrevNT + downPart]->Fill();
+  } else {
+    if ( nHit >= tV->m_NHitsV + tV->m_NHitsUT )
+      ( *trees )[TrPos_predT + ( 22 - 2 * tI.m_PrevNT ) + 24 + downPart]->Fill();
+    else if ( nHit == tV->m_NHitsV + tV->m_NHitsUT - 1 ) {
+      if ( tI.m_NHitsUT != 0 ) ( *trees )[TrPos_predUTT + 2 + downPart]->Fill();
+    } else if ( nHit >= tV->m_NHitsV )
+      ( *trees )[TrPos_predUT + 7 - tI.m_PrevNUT]->Fill();
+    else if ( nHit == tV->m_NHitsV - 1 )
+      ( *trees )[TrPos_predVUT + 1]->Fill();
+    else
+      ( *trees )[TrPos_predV + 1]->Fill();
+  }
+
+  // set state to true state for tuning
+  if ( m_SetTrueStateAfterPredict ) {
+    for ( int i = 0; i < 5; i++ )
+      for ( int j = 0; j <= i; j++ ) C( i, j ) = 0.;
+    x.SetElements( tV->m_true_x.begin(), tV->m_true_x.end() );
+    std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+    std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  }
+
+  return Succes;
+}
+
+//////////////////////////////////////////
+// Predict UT <-> T
+//////////////////////////////////////////
+void ParameterizedKalmanFit_Checker::PredictStateUTT_Ch( Gaudi::Vector5& x, Gaudi::SymMatrix5x5& C, double& lastz,
+                                                         trackInfo& tI, std::vector<TTree*>* trees, trackTupleInfo* tV,
+                                                         IGeometryInfo const& geometry ) const {
+  // std::cout << "Predict UTT" << std::endl;
+  int forward = lastz < 5000. ? 1 : -1;
+  int iPar    = forward > 0 ? 0 : 1;
+
+  // cache old state
+  Gaudi::Vector5 x_old = x;
+
+  // cache variables for the overall extrapolation
+  tV->m_xTmp      = tV->m_x;
+  tV->m_true_xTmp = tV->m_true_x;
+  tV->m_zTmp      = tV->m_z;
+
+  // when going backward: predict to fixed z in T(z=7855)
+  if ( forward < 0 ) {
+    PredictStateTFT_Ch( forward, x, C, lastz, tI, trees, tV, geometry );
+  }
+  // If we are at a different z position: go to the start position of the extrpolation)
+  else if ( tI.m_extr->UTTExtrBeginZ() != lastz ) {
+    PredictStateUTFUT_Ch( forward, x, C, lastz, tI, trees, tV, geometry );
+  }
+
+  // jacobian matrix
+  Gaudi::Matrix5x5 F;
+
+  // extrapolating from last UT hit (if no hit: z=2642.5) to fixed z in T (z=7855)
+  if ( forward > 0 ) {
+
+    // Calculate the extrapolation for a refernece state that uses the inital
+    // forward momentum estimate
+    // cache old state
+    Gaudi::Vector5 xref = x;
+    // This reference can then also be used for the backward propagation
+    // This gives a better momentum estimate
+    xref[4] = tI.m_BestMomEst;
+    // save reference state for this intermediate extrapolation
+    tI.m_RefStateForwardUT = xref;
+
+    // Transporation and noise matrix
+    Gaudi::Matrix5x5    F;
+    Gaudi::SymMatrix5x5 Q;
+    tI.m_extr->ExtrapolateUTT( xref, F, Q );
+
+    // save reference state/jacobian after this intermediate extrapolation
+    tI.m_RefStateForwardT  = xref;
+    tI.m_RefPropForwardUTT = F;
+
+    // extrapolate the actual state
+    // propagate the deviation from reference
+    x = tI.m_RefStateForwardT + F * ( x - tI.m_RefStateForwardUT );
+
+    // Set current z position
+    lastz = tI.m_extr->UTTExtrEndZ();
+
+    // transport covariance matrix
+    C = LHCb::Math::Similarity( F, C );
+
+    // Add noise to covariance
+    C += Q;
+
+  }
+
+  // extrapolating from UT (z=2327.5 or first hit) to end of velo (z=770)
+  //(no parametrization for this -> use reference)
+  else {
+    // propagate deviation from reference (use forward filtering for this)
+    // use inverted jacobian from forward extrapolation TODO use that der_x, der_y=0
+    F = tI.m_RefPropForwardUTT;
+    F.InvertFast();
+
+    // propagate the eviation from reference
+    x = tI.m_RefStateForwardUT + F * ( x_old - tI.m_RefStateForwardT );
+
+    // set current z position
+    lastz = tI.m_extr->UTTExtrBeginZ();
+
+    // transport covariance matrix
+    C = LHCb::Math::Similarity( F, C );
+
+    // Get noise
+    Gaudi::SymMatrix5x5 Q;
+    tI.m_extr->GetNoiseUTTBackw( x_old, Q );
+
+    // Add noise to covariance
+    C += Q;
+  }
+
+  // Fill tuple for tuning
+  // cache variables for the overall extrapolation
+  if ( forward > 0 ) {
+    tV->m_xTmp      = tV->m_x;
+    tV->m_true_xTmp = tV->m_true_x;
+    tV->m_zTmp      = tV->m_z;
+  }
+  // set variables for the current extrpolation
+  tV->m_x_prev      = tV->m_x;
+  tV->m_true_x_prev = tV->m_true_x;
+  tV->m_z_prev      = tV->m_z;
+
+  std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+  std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  tV->m_z = lastz;
+
+  // Set true qop at current position
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_qop_here, tI,
+             geometry, false );
+  // get the true state with inital true momentum
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_x[4], tI, geometry );
+
+  // get the infromation from the default propagator
+  fillInfoForExtrapolation( tV->m_z_prev, tV->m_z, tI, tV, geometry );
+
+  ( *trees )[TrPos_predUTTF + iPar]->Fill();
+
+  ////set state to true state + artifical smearing for tuning updatePosition
+  if ( m_SetTrueStateAfterPredict ) {
+    for ( int i = 0; i < 5; i++ )
+      for ( int j = 0; j <= i; j++ ) C( i, j ) = 0.;
+    x.SetElements( tV->m_true_x.begin(), tV->m_true_x.end() );
+    std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+    std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  }
+
+  // When going backwards: predict to the last VELO measurement
+  if ( forward > 0 ) {
+    PredictStateTFT_Ch( forward, x, C, lastz, tI, trees, tV, geometry );
+  }
+  // in case of a hit, z might not be exactly the default position:
+  else if ( tI.m_HasHitUT[3] == 1 ) {
+    PredictStateUTFUT_Ch( forward, x, C, lastz, tI, trees, tV, geometry );
+  }
+
+  // reset variables for the overall prediciton
+  tV->m_x      = tV->m_xTmp;
+  tV->m_true_x = tV->m_true_xTmp;
+  tV->m_z      = tV->m_zTmp;
+}
+
+//////////////////////////////////////////////
+// Predict UT(fixed z) <-> last UT layer
+//////////////////////////////////////////////
+void ParameterizedKalmanFit_Checker::PredictStateUTFUT_Ch( int forward, Gaudi::Vector5& x, Gaudi::SymMatrix5x5& C,
+                                                           double& lastz, trackInfo& tI, std::vector<TTree*>* trees,
+                                                           trackTupleInfo* tV, IGeometryInfo const& geometry ) const {
+  PredictStateUTFUT( forward, x, C, lastz, tI );
+  // fill ntuple
+  // set variables for the current extrpolation
+  tV->m_x_prev      = tV->m_x;
+  tV->m_true_x_prev = tV->m_true_x;
+  tV->m_z_prev      = tV->m_z;
+  fillInfoForExtrapolation( tV->m_z_prev, lastz, tI, tV, geometry );
+
+  std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+  std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  tV->m_z = lastz;
+
+  // Set true qop at current position
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_qop_here, tI,
+             geometry, false );
+  // get the true state with inital true momentum
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_x[4], tI, geometry );
+
+  ( *trees )[TrPos_predUTFUT]->Fill();
+
+  ////set state to true state + artifical smearing for tuning updatePosition
+  if ( m_SetTrueStateAfterPredict ) {
+    for ( int i = 0; i < 5; i++ )
+      for ( int j = 0; j <= i; j++ ) C( i, j ) = 0.;
+    x.SetElements( tV->m_true_x.begin(), tV->m_true_x.end() );
+    std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+    std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  }
+}
+
+//////////////////////////////////////////////
+// Predict T(fixed z=7783) <-> first T layer
+//////////////////////////////////////////////
+void ParameterizedKalmanFit_Checker::PredictStateTFT_Ch( int forward, Gaudi::Vector5& x, Gaudi::SymMatrix5x5& C,
+                                                         double& lastz, trackInfo& tI, std::vector<TTree*>* trees,
+                                                         trackTupleInfo* tV, IGeometryInfo const& geometry ) const {
+  // std::cout << "Predict TFT" << std::endl;
+  int iPar = forward > 0 ? 0 : 1;
+  PredictStateTFT( forward, x, C, lastz, tI );
+  // fill ntuple
+  // set variables for the current extrpolation
+  tV->m_x_prev      = tV->m_x;
+  tV->m_true_x_prev = tV->m_true_x;
+  tV->m_z_prev      = tV->m_z;
+  fillInfoForExtrapolation( tV->m_z_prev, lastz, tI, tV, geometry );
+
+  std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+  std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  tV->m_z = lastz;
+
+  // Set true qop at current position
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_qop_here, tI,
+             geometry, false );
+  // get the true state with inital true momentum
+  TrueState( lastz, tV->m_true_x[0], tV->m_true_x[1], tV->m_true_x[2], tV->m_true_x[3], tV->m_true_x[4], tI, geometry );
+
+  ( *trees )[TrPos_predTFT + iPar]->Fill();
+
+  ////set state to true state + artifical smearing for tuning updatePosition
+  if ( m_SetTrueStateAfterPredict ) {
+    for ( int i = 0; i < 5; i++ )
+      for ( int j = 0; j <= i; j++ ) C( i, j ) = 0.;
+    x.SetElements( tV->m_true_x.begin(), tV->m_true_x.end() );
+    std::copy_n( x.Array(), 5, std::begin( tV->m_x ) );
+    std::copy_n( C.Array(), 15, std::begin( tV->m_P ) );
+  }
+}
+
+////////////////////////////////////////////////////////////////
+// fill information for comparing default and this kalman filter
+////////////////////////////////////////////////////////////////
+void ParameterizedKalmanFit_Checker::FillNtuple( Gaudi::Vector5 x, Gaudi::SymMatrix5x5 C, double z, trackInfo& tI,
+                                                 trackTupleInfo* tV, double position, int pos,
+                                                 IGeometryInfo const& geometry ) const {
+  double z_eval = position;
+  // indicator for a comparison at the actual state position
+  if ( position < -500 ) { z_eval = z; }
+
+  // qop at PV
+  TrueState( z_eval, tV->m_sF_true_x[pos][0], tV->m_sF_true_x[pos][1], tV->m_sF_true_x[pos][2], tV->m_sF_true_x[pos][3],
+             tV->m_true_qop_PV, tI, geometry );
+  // qop at this position
+  TrueState( z_eval, tV->m_sF_true_x[pos][0], tV->m_sF_true_x[pos][1], tV->m_sF_true_x[pos][2], tV->m_sF_true_x[pos][3],
+             tV->m_sF_true_x[pos][4], tI, geometry, false );
+  tV->m_sF_z[pos] = z;
+
+  // fit result at this position
+  Gaudi::TrackSymMatrix covMat( C.Array(), 15 );
+  Gaudi::TrackVector    stateVec( x.Array(), 5 );
+  double                statez = z;
+  LHCb::State           state( stateVec, covMat, statez, LHCb::State::Location::LocationUnknown );
+
+  m_extrapolator->propagate( state, z_eval, geometry ).ignore();
+  tV->m_sF_x[pos][0] = state.x();
+  tV->m_sF_x[pos][1] = state.y();
+  tV->m_sF_x[pos][2] = state.tx();
+  tV->m_sF_x[pos][3] = state.ty();
+  tV->m_sF_x[pos][4] = state.qOverP();
+  tV->m_sF_z[pos]    = state.z();
+  covMat             = state.covariance();
+
+  int k = 0;
+  for ( int i = 0; i < 5; i++ ) {
+    for ( int j = 0; j <= i; j++ ) {
+      tV->m_sF_P[pos][k] = covMat( i, j );
+      k++;
+    }
+  }
+
+  // track fit quality
+  tV->m_sF_ndof = tI.m_Ndof - 5; // this is not true for the chi2 obtained from smoothing
+  tV->m_sF_chi2 = tI.m_chi2;
+}
